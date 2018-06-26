@@ -12,14 +12,14 @@ import ARUtils, { ARDisplay } from './ARUtils';
 
 import ViewBg from './ViewBg';
 import ViewRing from './ViewRing';
+import ViewTwist from './ViewTwist';
 
 class SceneApp extends Scene {
 	constructor() {
 		Settings.init();
 
 		super();
-		this.orbitalControl.radius.setTo(0.5);
-		
+		this.orbitalControl.radius.setTo(10);
 
 		this._mHit     = mat4.create();
 		this._mCenter  = mat4.create();
@@ -45,6 +45,7 @@ class SceneApp extends Scene {
 	_initViews() {
 		this._vRing = new ViewRing();
 		this._bCopy = new alfrid.BatchCopy();
+		this._vTwist = new ViewTwist();
 
 		if(this.ARDisplay) {
 			this._vBg = new ARVideoRenderer(this.ARDisplay, GL.gl);	
@@ -63,6 +64,7 @@ class SceneApp extends Scene {
 		if(hit) {
 			mat4.identity(this._mHit, this._mHit);
 			mat4.translate(this._mHit, this._mHit, hit.hitPosition);
+			this._vTwist.open();
 			this._hasClicked = true;
 		}
 	}
@@ -95,7 +97,8 @@ class SceneApp extends Scene {
 			this._vRing.render();	
 		}
 
-		GL.rotate(this._mHit);
+		GL.rotate(this._mHit);	
+		this._vTwist.render();
 	}
 
 
