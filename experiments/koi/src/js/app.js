@@ -60,7 +60,7 @@ function _onImageLoaded(o) {
 
 
 function _init3D() {
-	Settings.refresh();
+	// Settings.refresh();
 
 	ARUtils.getARDisplay().then((display)=> {
 

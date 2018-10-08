@@ -5,6 +5,8 @@
 precision highp float;
 varying vec3 vDebug;
 varying vec3 vNormal;
+varying vec3 vPosition;
+uniform float uClip;
 
 #define DARK_BLUE vec3(32.0, 35.0, 40.0)/255.0
 
@@ -22,6 +24,8 @@ vec3 diffuse(vec3 N, vec3 L, vec3 C) {
 #define LIGHT  vec3(0.0, 1.0, 0.0)
 
 void main(void) {
+
+	if(vPosition.y < uClip) { discard; }
 
 	float d      = diffuse(vNormal, LIGHT);
 	vec3 color   = DARK_BLUE;

@@ -30,7 +30,7 @@ class ViewFish extends alfrid.View {
 	}
 
 
-	render(texture, textureExtra) {
+	render(texture, textureExtra, clip = -999) {
 		this.shader.bind();
 		this.shader.uniform("uTime", "float", alfrid.Scheduler.deltaTime);
 
@@ -39,6 +39,7 @@ class ViewFish extends alfrid.View {
 
 		this.shader.uniform("textureExtra", "uniform1i", 1);
 		textureExtra.bind(1);
+		this.shader.uniform("uClip", "float", clip);
 
 		this.shader.uniform(Config.fish);
 		GL.draw(this.mesh);

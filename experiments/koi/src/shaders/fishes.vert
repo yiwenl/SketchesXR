@@ -18,6 +18,7 @@ uniform float uTime;
 varying vec2 vTextureCoord;
 varying vec3 vNormal;
 varying vec3 vDebug;
+varying vec3 vPosition;
 
 vec2 rotate(vec2 v, float a) {
 	float s = sin(a);
@@ -68,6 +69,6 @@ void main(void) {
 	gl_Position   = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(pos, 1.0);
 	vTextureCoord = aTextureCoord;
 	vNormal       = aNormal;
-
+	vPosition = pos;
 	vDebug = vec3(g);
 }

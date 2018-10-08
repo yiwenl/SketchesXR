@@ -213,18 +213,18 @@ void main(void) {
 		d = distance(pos.xz, uCenter.xz);
 		float r = uMaxRadius * 0.25;
 		if(d > r) {
-			float f = (d - r) * 0.7;
+			float f = (d - r) * 0.71;
 			vec2 dir = normalize(pos.xz);
 			acc.xz -= dir * f;
 		}
 
 		float speed = mix(extra.b, 1.0, .14);
-		vel += acc * 0.002 * speed;
+		vel += acc * 0.001 * speed;
 
 		float decreaseRate = 0.99;
 		vel *= decreaseRate;
 
-		float maxSpeed = 1.0;
+		float maxSpeed = 0.75;
 		if(length(vel) > maxSpeed) {
 			vel = normalize(vel) * maxSpeed;
 		} 

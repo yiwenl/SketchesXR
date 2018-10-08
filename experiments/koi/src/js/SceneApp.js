@@ -19,8 +19,6 @@ import ViewFish from './ViewFish';
 
 class SceneApp extends Scene {
 	constructor() {
-		Settings.init();
-
 		super();
 		this.orbitalControl.radius.setTo(0.5);
 
@@ -35,6 +33,22 @@ class SceneApp extends Scene {
 		this._center = vec3.create();
 		this._centerOrg = vec3.create();
 		this._touchForce = new alfrid.EaseNumber(0, 0.01);
+
+		//	shadow map
+		this._cameraLight = new alfrid.CameraOrtho();
+		const s = Config.maxRadius/2;
+		this._cameraLight.ortho(-s, s, -s, s, 1, 50);
+		this._cameraLight.lookAt([0, 10, 0], [0, 0, 0], [0, 0, -1]);
+
+		this._biasMatrix = mat4.fromValues(
+			0.5, 0.0, 0.0, 0.0,
+			0.0, 0.5, 0.0, 0.0,
+			0.0, 0.0, 0.5, 0.0,
+			0.5, 0.5, 0.5, 1.0
+		);
+		this._shadowMatrix = mat4.create();
+		mat4.multiply(this._shadowMatrix, this._cameraLight.projection, this._cameraLight.viewMatrix);
+		mat4.multiply(this._shadowMatrix, this._biasMatrix, this._shadowMatrix);
 
 		if(ARUtils.hasARDisplay) {
 			this._frameData = new VRFrameData();
@@ -51,6 +65,9 @@ class SceneApp extends Scene {
 
 	_initTextures() {
 		this._fboBg = new alfrid.FrameBuffer(GL.width, GL.height);
+
+		const shadowMapSize = 2048;
+		this._fboShadow = new alfrid.FrameBuffer(shadowMapSize, shadowMapSize, {minFilter:GL.LINEAR, magFilter:GL.LINEAR});
 	}
 
 
@@ -85,8 +102,23 @@ class SceneApp extends Scene {
 	}
 
 
+	renderShadow() {
+		//	update shadow matrix
+		//	copy touch.xz to camera.xz
+		//	move floor.xz to touch.xz
+		
+		this._fboShadow.bind();
+		GL.clear(0, 0, 0, 0);
+		GL.setMatrices(this._cameraLight);
+		GL.rotate(this._mHit);
+		this._vFishes.render(this._koiSim.texture, this._koiSim.textureExtra, 0);
+		this._fboShadow.unbind();
+
+	}
+
+
 	render() {
-		this._koiSim.update(this._hit, this._touchForce.value, this._center);
+		
 
 		GL.clear(0, 0, 0, 0);		
 
@@ -113,16 +145,29 @@ class SceneApp extends Scene {
 			this._touchForce.value = 0;
 		}
 
+		this._koiSim.update(this._hit, this._touchForce.value, this._center);
+		this.renderShadow();
+
 
 		let s = this._touchForce.value * 0.025;
+
+		GL.setMatrices(this.camera);
 		GL.rotate(this._mHit);
+		
+		this._vFloor.render(this._shadowMatrix, this._fboShadow.getTexture());
 		this._vFishes.render(this._koiSim.texture, this._koiSim.textureExtra);
-		this._bBall.draw(this._center, [s, s, s], [1, 0, 0]);
+		this._bBall.draw(this._hit, [s, s, s], [1, 0, 0]);
+
+		
 
 		if (this.ARDisplay) {
 			GL.rotate(this._mCenter);
 			this._vRing.render();	
 		}
+
+		s = 256;
+		GL.viewport(0, 0, s, s);
+		this._bCopy.draw(this._fboShadow.getTexture());
 	}
 
 
