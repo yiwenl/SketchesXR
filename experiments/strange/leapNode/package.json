@@ -1,0 +1,17 @@
+{
+  "name": "leap-node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.3",
+    "leapjs": "^0.6.4",
+    "socket.io": "^2.1.1"
+  }
+}
