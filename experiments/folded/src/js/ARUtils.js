@@ -3,7 +3,7 @@ let _instance;
 class ARUtils {
 
 	constructor() {
-
+		this._quat = quat.create();
 	}
 
 	getARDisplay() {
@@ -85,6 +85,17 @@ class ARUtils {
 
 	get hasARDisplay() {
 		return !!this._display;
+	}
+
+	get pose() {
+		return this._frameData.pose;
+	}
+
+	get orientation() {
+		if(!this._frameData) {
+			return this._quat;
+		}
+		return this._frameData.pose.orientation;
 	}
 }
 

@@ -2,14 +2,17 @@
 
 
 import alfrid, { GL } from 'alfrid';
+import vs from 'shaders/circle.vert';
+import fs from 'shaders/circle.frag';
 
 class ViewCircle extends alfrid.View {
 	
-	constructor(mRadius, mSize) {
-		super();
+	constructor(mRadius, mSize, mZOffset=0) {
+		super(vs, fs);
 
 		this._radius = mRadius;
 		this._size = mSize;
+		this._zOffset = mZOffset;
 
 		this._initMesh();
 	}
@@ -31,13 +34,11 @@ class ViewCircle extends alfrid.View {
 			mat4.rotateY(m, m, theta);
 			vec3.transformMat4(v, v, m);
 
-			let r = vec3.fromValues(this._radius, 0, 0);
+			let r = vec3.fromValues(this._radius, 0, this._zOffset);
 			vec3.add(v, v, r);
 			mat4.identity(m);
 			mat4.rotateZ(m, m, a);
 			vec3.transformMat4(v, v, m);
-
-			console.log(v, r);
 
 			return v;
 		}
@@ -75,8 +76,13 @@ class ViewCircle extends alfrid.View {
 	}
 
 
-	render() {
+	render(mMatrixLocal, mMatrixProj, texture) {
 		this.shader.bind();
+		this.shader.uniform("uMatrixLocal", "mat4", mMatrixLocal);
+		this.shader.uniform("uMatrixProject", "mat4", mMatrixProj);
+
+		this.shader.uniform("texture", "uniform1i", 0);
+		texture.bind(0);
 		GL.draw(this.mesh);
 	}
 
