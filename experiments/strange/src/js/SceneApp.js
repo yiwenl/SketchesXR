@@ -74,10 +74,12 @@ class SceneApp extends Scene {
 		// console.log('Grab changed :', o);
 		if(grabbed) {
 			this.angle.value = 0;
-			vec3.copy(this.normalGrabbed, this.normalPalm);
+			
 			this._isGrabbed = true;
 			this.offset.value = 0;
 		} else {
+
+			vec3.copy(this.normalGrabbed, this.normalPalm);
 			this.angle.value = 0;
 			this._isGrabbed = false;
 			this.offset.value = 1;
@@ -137,7 +139,7 @@ class SceneApp extends Scene {
 		let angle = Math.acos(dotValue);
 
 		let pos = vec3.clone(palmPos);
-		pos[2] -= 0.1;
+		pos[2] -= 0.2;
 
 		mat4.identity(this.mtxPalm);
 		mat4.translate(this.mtxPalm, this.mtxPalm, pos);
@@ -218,8 +220,6 @@ class SceneApp extends Scene {
 		this.sq2.rotation = this.angle.value;
 		this.star1.rotation = this.angle.value * 1.5;
 		this.star2.rotation = this.angle.value * 2;
-
-		console.log('this.offset.value', this.offset.value);
 
 		this._geoms.forEach( circle => circle.render(this.offset.value) );
 
