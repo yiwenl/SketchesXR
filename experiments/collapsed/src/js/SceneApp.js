@@ -57,8 +57,8 @@ class SceneApp extends Scene {
 				console.log('stop capturing');
 				this._updateTexture = false;
 
-				mat4.multiply(this._mProj, this.camera.projection, this.camera.viewMatrix);
-				mat4.multiply(this._mProj, this._biasMatrix, this._mProj);
+				// mat4.multiply(this._mProj, this.camera.projection, this.camera.viewMatrix);
+				// mat4.multiply(this._mProj, this._biasMatrix, this._mProj);
 				this._offset.value = 1;
 			}
 		})
@@ -102,7 +102,7 @@ class SceneApp extends Scene {
 			mat4.fromQuat(this._mOrient, ARUtils.orientation);
 			this._updateTexture = false;
 
-			this._offset.value = .1;
+			this._offset.value = 1;
 		}
 		
 	}
@@ -110,6 +110,12 @@ class SceneApp extends Scene {
 
 	render() {
 		GL.clear(0, 0, 0, 0);		
+
+		if(!GL.isMobile && this._updateTexture) {
+			mat4.multiply(this._mProj, this.camera.projection, this.camera.viewMatrix);
+			mat4.multiply(this._mProj, this._biasMatrix, this._mProj);	
+		}
+		
 
 		ARUtils.updateCamera(this.cameraAR);
 		GL.setMatrices(this.camera);

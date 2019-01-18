@@ -20,15 +20,17 @@ class ViewDisk extends alfrid.View {
 	_init() {
 
 		const positions = [];
+		const normals = [];
 		const uvs = [];
 		const indices = [];
 		let count = 0;
 
-		const num = 24 * 2;
+		const num = 24 * 4;
 		const numCircles = 5;
 		const startingRadius = .5;
 		const circleSize = .5;
 		this.totalSize = startingRadius + circleSize * numCircles;
+		this.circleSize = circleSize;
 
 
 		const getPos = (i, j, z) => {
@@ -41,9 +43,9 @@ class ViewDisk extends alfrid.View {
 			]
 		}
 
+
 		for(let i=0; i<num; i++) {
 			for(let j=0; j<numCircles; j++) {
-
 
 				//	flat
 				positions.push(getPos(i, j, j));
@@ -55,6 +57,20 @@ class ViewDisk extends alfrid.View {
 				uvs.push([numCircles - j - 1, 0]);
 				uvs.push([numCircles - j - 1, 0]);
 				uvs.push([numCircles - j - 1, 0]);
+
+				if(j === numCircles-1) {
+					normals.push([j * circleSize, circleSize, 0]);
+					normals.push([j * circleSize, circleSize, 0]);
+					normals.push([j * circleSize, circleSize, 0]);
+					normals.push([j * circleSize, circleSize, 0]);	
+				} else {
+					normals.push([j * circleSize, circleSize, 0]);
+					normals.push([j * circleSize, circleSize, 0]);
+					normals.push([j * circleSize, circleSize, 1]);
+					normals.push([j * circleSize, circleSize, 1]);
+				}
+
+				
 
 				indices.push(count * 4 + 0);
 				indices.push(count * 4 + 1);
@@ -72,10 +88,15 @@ class ViewDisk extends alfrid.View {
 				positions.push(getPos(i+1, j, j));
 				positions.push(getPos(i, j, j));
 
-				uvs.push([numCircles - j, 0]);
-				uvs.push([numCircles - j, 0]);
-				uvs.push([numCircles - j-1, 0]);
-				uvs.push([numCircles - j-1, 0]);
+				uvs.push([numCircles - j, 1]);
+				uvs.push([numCircles - j, 1]);
+				uvs.push([numCircles - j-1, 1]);
+				uvs.push([numCircles - j-1, 1]);
+
+				normals.push([j * circleSize, circleSize, 0]);
+				normals.push([j * circleSize, circleSize, 0]);
+				normals.push([j * circleSize, circleSize, 0]);
+				normals.push([j * circleSize, circleSize, 0]);	
 
 				indices.push(count * 4 + 0);
 				indices.push(count * 4 + 1);
@@ -92,14 +113,18 @@ class ViewDisk extends alfrid.View {
 		this.mesh.bufferVertex(positions);
 		this.mesh.bufferTexCoord(uvs);
 		this.mesh.bufferIndex(indices);
+		this.mesh.bufferNormal(normals);
 	}
 
 
 	render(texture, mOrient, mProj, mOffset) {
+		// console.log('mOffset', mOffset);
 		this.shader.bind();
 		this.shader.uniform("uOrientMatrix", "mat4", mOrient);
-		this.shader.uniform("uOffset", "float", this.offset);
+		this.shader.uniform("uShadowMatrix", "mat4", mProj);
+		this.shader.uniform("uOffset", "float", mOffset);
 		this.shader.uniform("uTotalSize", "float", this.totalSize);
+		this.shader.uniform("uCircleSize", "float", this.circleSize);
 		this.shader.uniform("texture", "uniform1i", 0);
 		texture.bind(0);
 		GL.draw(this.mesh);
