@@ -12,9 +12,7 @@ import ARUtils, { ARDisplay } from './ARUtils';
 
 import ViewBg from './ViewBg';
 import ViewRing from './ViewRing';
-import ViewCircle from './ViewCircle';
-
-const SCALE_AR = !GL.isMobile ? 0.05 : 0.025;
+import ViewDisk from './ViewDisk';
 
 class SceneApp extends Scene {
 	constructor() {
@@ -23,23 +21,18 @@ class SceneApp extends Scene {
 		super();
 		this.orbitalControl.radius.setTo(0.5);
 		
-
+		let s = GL.isMobile ? .2 : 1;
+		s *= 0.2;
 		this._mHit       = mat4.create();
-		this._mHitSave   = mat4.create();
-		this._mTransform = mat4.create();
 		this._mCenter    = mat4.create();
-		this._mOrient	 = mat4.create();
+		this._mOrient    = mat4.create();
+		this._mTransform = mat4.create();
+		this._mProj      = mat4.create();
 		this._mtx        = mat4.create();
-		this._mProj 	 = mat4.create();
-		this._offset = new alfrid.EaseNumber(0, 0.03);
-
-		this._mPersp = mat4.create();
-		const fov = 90 * Math.PI / 180;
-		mat4.perspective(this._mPersp, fov, GL.aspectRatio, .1, 1000);
-
-		let s = SCALE_AR;
+		this._offset     = new alfrid.EaseNumber(0, 0.03);
 		mat4.scale(this._mTransform, this._mTransform, vec3.fromValues(s, s, s));
 
+		
 
 		if(ARUtils.hasARDisplay) {
 			this._frameData = new VRFrameData();
@@ -58,19 +51,17 @@ class SceneApp extends Scene {
 		);
 
 		GL.canvas.addEventListener('touchstart', (e)=>this._onClick(e));
-		// GL.canvas.addEventListener('mouseup', (e)=>this._onClick(e));
+
 		window.addEventListener('keyup', (e)=> {
 			if(e.keyCode === 32) {
 				console.log('stop capturing');
 				this._updateTexture = false;
 
 				mat4.multiply(this._mProj, this.camera.projection, this.camera.viewMatrix);
-				// mat4.multiply(this._mProj, this._mPersp, this.camera.viewMatrix);
 				mat4.multiply(this._mProj, this._biasMatrix, this._mProj);
 				this._offset.value = 1;
 			}
 		})
-
 	}
 
 
@@ -81,21 +72,13 @@ class SceneApp extends Scene {
 
 	_initViews() {
 		this._vRing = new ViewRing();
+		this._vDisk = new ViewDisk();
 		this._bCopy = new alfrid.BatchCopy();
 
 		if(this.ARDisplay) {
 			this._vBg = new ARVideoRenderer(this.ARDisplay, GL.gl);	
 		} else {
 			this._vBg = new ViewBg();	
-		}
-
-		const numRings = 5;
-		const ringSize = .5;
-
-		this._circles = [];
-		for(let i=0; i<numRings; i++) {
-			const c = new ViewCircle(1 + i * ringSize, ringSize, 1 + ringSize*i);
-			this._circles.push(c);
 		}
 	}
 
@@ -111,47 +94,34 @@ class SceneApp extends Scene {
 			mat4.translate(this._mHit, this._mHit, hit.hitPosition);
 			this._hasClicked = true;
 
-			mat4.mul(this._mHitSave, this._mHit, this._mTransform);
 
-			//	update project matrix
 			mat4.multiply(this._mProj, this.cameraAR.projection, this.cameraAR.viewMatrix);
 			mat4.multiply(this._mProj, this._biasMatrix, this._mProj);
-			this._offset.value = 1;
+
+
+			mat4.fromQuat(this._mOrient, ARUtils.orientation);
+			this._updateTexture = false;
+
+			this._offset.value = .1;
 		}
-
-		mat4.fromQuat(this._mOrient, ARUtils.orientation);
-		// mat4.invert(this._mOrient, this._mOrient);
-
-
-		console.log('camera pos :', this.cameraAR.position);
-		console.log('orientation', ARUtils.orientation);
-
-		console.log('this._mOrient', this._mOrient);
-		this._updateTexture = false;
-		// mat4.mul(this._mTransform, this._mTransform, vec3.fromValues(0, this.cameraAR.position[1], 0));
+		
 	}
 
 
 	render() {
 		GL.clear(0, 0, 0, 0);		
-		if(this._updateTexture && !GL.isMobile) {
-			mat4.multiply(this._mProj, this.camera.projection, this.camera.viewMatrix);
-			mat4.multiply(this._mProj, this._biasMatrix, this._mProj);
-		}
 
 		ARUtils.updateCamera(this.cameraAR);
 		GL.setMatrices(this.camera);
 
 
 		GL.disable(GL.DEPTH_TEST);
-
 		if(this._updateTexture) {
 			this._fboBg.bind();
 			GL.clear(0, 0, 0, 0);
 			this._vBg.render();
 			this._fboBg.unbind();
 		}
-
 
 		this._vBg.render();
 		GL.enable(GL.DEPTH_TEST);
@@ -172,20 +142,15 @@ class SceneApp extends Scene {
 			this._vRing.render();	
 		}
 
-		// mat4.multiply(this._mProj, this.camera.projection, this.camera.viewMatrix);
-		// mat4.multiply(this._mProj, this._biasMatrix, this._mProj);
-		
+
 		mat4.mul(this._mtx, this._mHit, this._mTransform);
-
+		// GL.rotate(this._mHit);
 		GL.rotate(this._mtx);
-		this._circles.forEach( c => {
-			c.render(this._mOrient, this._mProj, this._fboBg.getTexture(), this._offset.value, this._mHitSave);
-		})
 
+		this._vDisk.render(this.background, this._mOrient, this._mProj, this._offset.value);
 
-		let s = 200;
-		GL.viewport(0, 0, s, s/GL.aspectRatio);
-		this._bCopy.draw(this._fboBg.getTexture());
+		// this.shader.bind();
+		// GL.draw(this.mesh);
 	}
 
 
@@ -193,6 +158,11 @@ class SceneApp extends Scene {
 		const { innerWidth, innerHeight, devicePixelRatio } = window;
 		GL.setSize(innerWidth * devicePixelRatio, innerHeight * devicePixelRatio);
 		this.camera.setAspectRatio(GL.aspectRatio);
+	}
+
+
+	get background() {
+		return this._fboBg.getTexture();
 	}
 
 
