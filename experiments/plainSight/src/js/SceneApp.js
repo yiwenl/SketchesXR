@@ -13,6 +13,8 @@ import ARUtils, { ARDisplay } from "./ARUtils";
 import ViewBg from "./ViewBg";
 import ViewRing from "./ViewRing";
 
+import ViewPlane from "./ViewPlane";
+
 class SceneApp extends Scene {
   constructor() {
     Settings.init();
@@ -42,6 +44,7 @@ class SceneApp extends Scene {
   _initViews() {
     this._vRing = new ViewRing();
     this._bCopy = new alfrid.BatchCopy();
+    this._vPlane = new ViewPlane();
 
     if (this.ARDisplay) {
       this._vBg = new ARVideoRenderer(this.ARDisplay, GL.gl);
@@ -89,6 +92,7 @@ class SceneApp extends Scene {
     }
 
     GL.rotate(this._mHit);
+    this._vPlane.render();
   }
 
   resize() {

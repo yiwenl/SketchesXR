@@ -1,3 +1,6 @@
 // Config.js
 
-export default {};
+export default {
+  numPlanes: 6,
+  range: 2
+};
