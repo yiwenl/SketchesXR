@@ -1,97 +1,98 @@
 let _instance;
 
 class ARUtils {
+  constructor() {}
 
-	constructor() {
+  getARDisplay() {
+    const promise = new Promise((resolve, reject) => {
+      if (!navigator.getVRDisplays) {
+        resolve(null);
+        return;
+      }
 
-	}
+      navigator.getVRDisplays().then(displays => {
+        if (!displays && displays.length === 0) {
+          resolve(null);
+          return;
+        }
 
-	getARDisplay() {
-		const promise = new Promise((resolve, reject) => {
-			if (!navigator.getVRDisplays) {
-				resolve(null);
-				return;
-			}
+        for (let display of displays) {
+          if (this.isARDisplay(display)) {
+            this._display = display;
+            this._frameData = new VRFrameData();
+            resolve(display);
+            return;
+          }
+        }
+        resolve(null);
+      });
+    });
 
-			navigator.getVRDisplays().then(displays => {
-				if (!displays && displays.length === 0) {
-					resolve(null);
-					return;
-				}
+    return promise;
+  }
 
-				for (let display of displays) {
-					if (this.isARDisplay(display)) {
-						this._display   = display;
-						this._frameData = new VRFrameData();
-						resolve(display);
-						return;
-					}
-				}
-				resolve(null);
-			});
-		});
+  updateCamera(mCamera) {
+    if (!this._display) {
+      return;
+    }
 
-		return promise;
-	}
+    this._display.getFrameData(this._frameData);
 
-	updateCamera(mCamera) {
-		if(!this._display) { return; }
+    const dir = "left";
+    const projection = this._frameData[`${dir}ProjectionMatrix`];
+    const matrix = this._frameData[`${dir}ViewMatrix`];
 
-		this._display.getFrameData(this._frameData);
+    mat4.copy(mCamera.matrix, matrix);
+    mat4.copy(mCamera.projection, projection);
 
-		const dir = 'left';
-		const projection = this._frameData[`${dir}ProjectionMatrix`];
-		const matrix = this._frameData[`${dir}ViewMatrix`];	
+    const { pose } = this._frameData;
+    vec3.copy(mCamera.position, pose.position);
+  }
 
-		mat4.copy(mCamera.matrix, matrix);
-		mat4.copy(mCamera.projection, projection);
+  hitTest(x = 0.5, y = 0.5) {
+    if (!this._display) {
+      return null;
+    }
 
-		const { pose } = this._frameData;
-		vec3.copy(mCamera.position, pose.position);
-	}
+    const hit = this._display.hitTest(0.5, 0.5);
+    if (hit && hit.length > 0) {
+      const { modelMatrix } = hit[0];
+      return {
+        modelMatrix,
+        hitPosition: vec3.fromValues(
+          modelMatrix[12],
+          modelMatrix[13],
+          modelMatrix[14]
+        )
+      };
+    } else {
+      return null;
+    }
+  }
 
+  isTango(display) {
+    return display && display.displayName.toLowerCase().includes("tango");
+  }
 
-	hitTest(x=0.5, y=0.5) {
-		if(!this._display) { return null; }
+  isARKit(display) {
+    return display && display.displayName.toLowerCase().includes("arkit");
+  }
 
-		const hit = this._display.hitTest(0.5, 0.5);
-		if(hit && hit.length > 0) {
-			const {modelMatrix} = hit[0];
-			return {
-				modelMatrix,
-				hitPosition:vec3.fromValues(modelMatrix[12], modelMatrix[13], modelMatrix[14])
-			}
-		} else {
-			return null;
-		}
+  isARDisplay(display) {
+    return this.isARKit(display) || this.isTango(display);
+  }
 
-	}
+  get ARDisplay() {
+    return this._display;
+  }
 
-	isTango(display) {
-		return display && display.displayName.toLowerCase().includes('tango');
-	}
-
-	isARKit(display) {
-		return display && display.displayName.toLowerCase().includes('arkit');
-	}
-
-	isARDisplay(display) {
-		return this.isARKit(display) || this.isTango(display);
-	}
-
-	get ARDisplay() {
-		return this._display;
-	}
-
-	get hasARDisplay() {
-		return !!this._display;
-	}
+  get hasARDisplay() {
+    return !!this._display;
+  }
 }
 
-
-
-if(!_instance) {
-	_instance = new ARUtils();
+if (!_instance) {
+  _instance = new ARUtils();
 }
 
 export default _instance;

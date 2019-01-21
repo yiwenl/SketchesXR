@@ -7,6 +7,7 @@
     "start": "npm run html:watch & NODE_ENV=development webpack-dev-server --open & node ./tasks/watch-asset.js & node ./tasks/shader-watcher.js",
     "build:dev": "npm run html & webpack --progress --profile --colors",
     "build": "NODE_ENV=production npm run html & NODE_ENV=production webpack --progress --profile --colors",
+    "pretty": "prettier --write ./src/**/*.js",
     "watch": "webpack --watch",
     "html": "node ./tasks/html.js",
     "html:watch": "node ./tasks/html-watch.js",
