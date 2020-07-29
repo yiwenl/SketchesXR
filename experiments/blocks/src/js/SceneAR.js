@@ -108,17 +108,17 @@ class SceneAR {
     this._mtxLeft = mat4.create()
     this._mtxRight = mat4.create()
 
-    const scale = 0.1
-    const offsetX = numRows * CUBE_SIZE * 0.5
+    const scale = 2.0
+    const offsetX = numRows * CUBE_SIZE * 1
     mat4.copy(this._mtxLeft, mMtx)
-    mat4.translate(this._mtxLeft, this._mtxLeft, vec3.fromValues(0, 0, -SEPARATION * scale))
-    mat4.rotateY(this._mtxLeft, this._mtxLeft, -Math.PI / 2)
+    mat4.translate(this._mtxLeft, this._mtxLeft, vec3.fromValues(-SEPARATION * scale, 0, 0))
+    // mat4.rotateY(this._mtxLeft, this._mtxLeft, -Math.PI / 2)
     mat4.scale(this._mtxLeft, this._mtxLeft, vec3.fromValues(scale, scale, scale))
     mat4.translate(this._mtxLeft, this._mtxLeft, vec3.fromValues(0, 0, -offsetX))
 
     mat4.copy(this._mtxRight, mMtx)
-    mat4.translate(this._mtxRight, this._mtxRight, vec3.fromValues(0, 0, SEPARATION * scale))
-    mat4.rotateY(this._mtxRight, this._mtxRight, -Math.PI / 2)
+    mat4.translate(this._mtxRight, this._mtxRight, vec3.fromValues(SEPARATION * scale, 0, 0))
+    // mat4.rotateY(this._mtxRight, this._mtxRight, -Math.PI / 2)
     mat4.scale(this._mtxRight, this._mtxRight, vec3.fromValues(scale, scale, scale))
     mat4.translate(this._mtxRight, this._mtxRight, vec3.fromValues(0, 0, -offsetX))
 
