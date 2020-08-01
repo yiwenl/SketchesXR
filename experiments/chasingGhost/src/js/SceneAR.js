@@ -113,7 +113,6 @@ class SceneAR {
     
     this._fboPos.swap();
 
-    console.log("update")
   }
 
   render () {
