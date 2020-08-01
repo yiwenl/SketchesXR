@@ -10,6 +10,7 @@ import fsSave from 'shaders/save.frag'
 import vsRender from 'shaders/render.vert'
 import fsRender from 'shaders/render.frag'
 import fsSim from 'shaders/sim.frag'
+import fsAddVel from 'shaders/addVel.frag'
 
 class SceneAR {
   init () {
@@ -35,6 +36,7 @@ class SceneAR {
     this._fboPos = new alfrid.FboPingPong(numParticles, numParticles, oSettings)
     this._fboVel = new alfrid.FboPingPong(numParticles, numParticles, oSettings)
     this._fboExtra = new alfrid.FrameBuffer(numParticles, numParticles, oSettings)
+    this._fboPosOrg = new alfrid.FrameBuffer(numParticles, numParticles, oSettings)
 
     const meshRender = (() => {
       const mesh = new alfrid.Mesh(GL.POINTS)
@@ -75,13 +77,48 @@ class SceneAR {
     drawSave.bindFrameBuffer(this._fboExtra)
       .uniform('uState', 'float', 1)
       .draw()
+
+    this._fboPosOrg.bind();
+    GL.clear(0, 0, 0, 0);
+    this._bCopy.draw(this._fboPos.read.texture);
+    this._fboPosOrg.unbind();
+
+    this._drawSim = new alfrid.Draw()
+      .setMesh(alfrid.Geom.bigTriangle())
+      .useProgram(alfrid.ShaderLibs.bigTriangleVert, fsSim)
+      .setClearColor(0, 0, 0, 0)
+
+    this._drawAdd = new alfrid.Draw()
+      .setMesh(alfrid.Geom.bigTriangle())
+      .useProgram(alfrid.ShaderLibs.bigTriangleVert, fsAddVel)
+      .setClearColor(0, 0, 0, 0)
   }
 
   update () {
+    this._drawSim
+      .bindFrameBuffer(this._fboVel.write)
+      .uniformTexture('uTexPos', this._fboPos.read.texture, 0)
+      .uniformTexture('uTexVel', this._fboVel.read.texture, 1)
+      .uniformTexture('uTexExtra', this._fboExtra.texture, 2)
+      .uniformTexture('uTexPosOrg', this._fboPosOrg.texture, 3)
+      .uniform('uTime', 'float', alfrid.Scheduler.deltaTime)
+      .draw();
+    this._fboVel.swap();
+    
+    this._drawAdd
+      .bindFrameBuffer(this._fboPos.write)
+      .uniformTexture('uTexPos', this._fboPos.read.texture, 0)
+      .uniformTexture('uTexVel', this._fboVel.read.texture, 1)
+      .draw();
+    
+    this._fboPos.swap();
+
+    console.log("update")
   }
 
   render () {
     if (!this._hasLoaded) { return }
+    this.update();
     this._bAxis.draw()
     this._bDots.draw()
 
@@ -95,6 +132,8 @@ class SceneAR {
     this._bCopy.draw(this._fboPos.read.texture)
     GL.viewport(s, 0, s, s)
     this._bCopy.draw(this._fboExtra.texture)
+    GL.viewport(s * 2, 0, s, s)
+    this._bCopy.draw(this._fboPosOrg.texture)
   }
 }
 
