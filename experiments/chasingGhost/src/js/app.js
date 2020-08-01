@@ -10,7 +10,7 @@ import ARUtils from './ARUtils'
 import alfrid, { GL } from 'alfrid'
 
 let btnAR
-let camera, ball, ballScale, scene, video
+let camera, ball, ballScale, scene
 let hasStarted = false
 
 if (document.body) {
@@ -65,7 +65,7 @@ function arStarted ({ canvas, gl }) {
       console.log('assets loaded')
       Assets.init(o)
 
-      scene = new SceneAR(video)
+      scene = new SceneAR()
       scene.init()
       ARUtils.on('onUpdate', update)
       ARUtils.on('onRender', render)
@@ -115,4 +115,27 @@ function logError (e) {
 
 function noSupport () {
   document.body.classList.add('no-xr')
+
+  const canvas = document.createElement('canvas')
+  const container = document.body.querySelector('.container')
+  canvas.className = 'Main-Canvas'
+  container.appendChild(canvas)
+
+  // INIT 3D TOOL
+  GL.init(canvas, { ignoreWebgl2: false, preserveDrawingBuffer: true })
+  GL.setSize(window.innerWidth, window.innerHeight)
+
+  scene = new SceneAR()
+  scene.init()
+
+  const camera = new alfrid.CameraPerspective()
+  camera.setPerspective(75 * Math.PI / 180, GL.aspectRatio, 0.1, 100)
+  const orbControl = new alfrid.OrbitalControl(camera, window, 5)
+
+  alfrid.Scheduler.addEF(() => {
+    GL.viewport(0, 0, GL.width, GL.height)
+    GL.clear(0, 0, 0, 0)
+    GL.setMatrices(camera)
+    scene.render()
+  })
 }

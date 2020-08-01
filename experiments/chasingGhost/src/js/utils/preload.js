@@ -83,10 +83,7 @@ const closeLoadingAnim = () => new Promise((resolve, reject) => {
 })
 
 const preload = () => new Promise((resolve, reject) => {
-  initAlfrid()
-    .then(getLoadingImage)
-    .then(createLoadingAnim)
-    .then(loadAssets)
+  loadAssets()
     .then(initAssets)
     .then(closeLoadingAnim)
     .then(() => {
