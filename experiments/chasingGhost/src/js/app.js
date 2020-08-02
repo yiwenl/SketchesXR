@@ -48,36 +48,15 @@ function arStarted ({ canvas, gl }) {
   ball = new alfrid.BatchBall()
   ballScale = new alfrid.EaseNumber(0)
 
-  // load assets
-  new AssetsLoader({
-    assets: assets
-  })
-    .on('error', (error) => {
-      console.log('Error :', error)
-    })
-    .on('progress', (p) => {
-      // console.log('Progress : ', p);
-      const loader = document.body.querySelector('.Loading-Bar')
-      if (loader) loader.style.width = `${(p * 100)}%`
-    })
-    .on('complete', (o) => {
-      // resolve(o)
-      console.log('assets loaded')
-      Assets.init(o)
-
-      scene = new SceneAR()
-      scene.init()
-      ARUtils.on('onUpdate', update)
-      ARUtils.on('onRender', render)
-    })
-    .start()
+  scene = new SceneAR()
+  scene.init()
+  ARUtils.on('onUpdate', update)
+  ARUtils.on('onRender', render)
 
   window.addEventListener('touchstart', () => {
-    if (!ARUtils.hasHit) {
-      return
-    }
     console.log('touch start')
     hasStarted = true
+    scene.move()
   })
 }
 
@@ -89,6 +68,11 @@ function update ({ view, projection, background }) {
   mat4.copy(camera._projection, projection)
   mat4.copy(camera._matrix, view)
 
+  const { width, height } = ARUtils.viewport
+  if (!GL.width || GL.width !== width) {
+    GL.setSize(width, height)
+  }
+
   scene.update({ background })
 }
 
@@ -98,12 +82,6 @@ function render () {
   GL.viewport(x, y, width, height)
   GL.clear(0, 0, 0, 0)
   GL.setMatrices(camera)
-
-  GL.pushMatrix()
-  GL.rotate(ARUtils.hitMatrix)
-  const s = 0.01 * ballScale.value
-  ball.draw([0, 0, 0], [s, s, s], [1, 0.5, 0.2], 1)
-  GL.popMatrix()
 
   scene.render()
 }
@@ -115,7 +93,8 @@ function logError (e) {
 
 function noSupport () {
   document.body.classList.add('no-xr')
-
+  console.log(' no support ')
+/*
   const canvas = document.createElement('canvas')
   const container = document.body.querySelector('.container')
   canvas.className = 'Main-Canvas'
@@ -130,7 +109,9 @@ function noSupport () {
 
   const camera = new alfrid.CameraPerspective()
   camera.setPerspective(75 * Math.PI / 180, GL.aspectRatio, 0.1, 100)
-  const orbControl = new alfrid.OrbitalControl(camera, window, 5)
+  const orbControl = new alfrid.OrbitalControl(camera, window, 9)
+  orbControl.rx.value = 0.5
+  orbControl.ry.value = 0.5
 
   alfrid.Scheduler.addEF(() => {
     GL.viewport(0, 0, GL.width, GL.height)
@@ -138,4 +119,5 @@ function noSupport () {
     GL.setMatrices(camera)
     scene.render()
   })
+  */
 }

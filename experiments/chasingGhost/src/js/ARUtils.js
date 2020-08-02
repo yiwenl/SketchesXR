@@ -1,18 +1,18 @@
 import EventDispatcher from 'events'
-let hasLogged = false
 
 class ARUtils extends EventDispatcher {
   constructor () {
     super()
     this._hasChecked = false
     this._isSupported = false
-    this._captuerBackground = false
     this._session = null
     this.canvas = null
     this._gl = null
-    const { mat4 } = window
+    const { mat4, vec3 } = window
     this._viewMatrix = mat4.create()
     this._projectionMatrix = mat4.create()
+    this._lookDir = vec3.create()
+    this._cameraPos = vec3.create()
     this.viewport = {
       x: 0,
       y: 0,
@@ -48,22 +48,6 @@ class ARUtils extends EventDispatcher {
   }
 
   start (mWithBackground = false) {
-    this._captuerBackground = mWithBackground
-
-    if (this._captuerBackground) {
-      this._canvasBg = document.createElement('canvas')
-      this._canvasBg.width = window.innerWidth
-      this._canvasBg.height = window.innerHeight
-      this._canvasBg.style.position = 'absolute'
-      this._canvasBg.style.top = 0
-      this._canvasBg.style.left = 0
-      this._ctxBg = this._canvasBg.getContext('2d')
-      this._ctxBg.fillStyle = 'red'
-      this._ctxBg.fillRect(0, 0, 200, 200)
-
-      document.querySelector('.container').appendChild(this._canvasBg)
-    }
-
     return new Promise((resolve, reject) => {
       // resolve()
       // reject(new Error('need implement'))
@@ -73,7 +57,7 @@ class ARUtils extends EventDispatcher {
         domOverlay: { root: document.querySelector('.container') },
         requiredFeatures: ['local', 'hit-test']
       }).then((session) => {
-        console.log('Session', session)
+        // console.log('Session', session)
         this.session = session
         this.canvas = document.createElement('canvas')
         this._gl = this.canvas.getContext('webgl', {
@@ -108,33 +92,24 @@ class ARUtils extends EventDispatcher {
 
   _onXRFrame (t, frame) {
     const { _gl: gl } = this
-    const { mat4 } = window
+    const { mat4, mat3, vec3 } = window
 
     const session = frame.session
-    if (this._captuerBackground) {
-      console.log('capture background')
-      this._ctxBg.clearRect(0, 0, this._canvasBg.width, this._canvasBg.height)
-      this._ctxBg.drawImage(this.canvas, 0, 0)
-      this._ctxBg.fillStyle = 'red'
-      this._ctxBg.fillRect(0, 0, 100, 100)
-    }
-
-    if (Math.random() > 0.95) {
-      console.log(session)
-      console.log(session.renderState)
-    }
 
     const pose = frame.getViewerPose(this._xrRefSpace)
 
     if (pose) {
-      if (!hasLogged) {
-        console.log(session, frame)
-      }
-      hasLogged = true
       const view = pose.views[0]
       this.viewport = session.renderState.baseLayer.getViewport(view)
       mat4.copy(this._projectionMatrix, view.projectionMatrix)
       mat4.copy(this._viewMatrix, view.transform.inverse.matrix)
+      const mtxRot = mat3.create()
+      mat3.fromMat4(mtxRot, this._viewMatrix)
+      mat3.transpose(mtxRot, mtxRot)
+      vec3.transformMat3(this._lookDir, [0, 0, -1], mtxRot)
+      vec3.normalize(this._lookDir, this._lookDir)
+      mat4.getTranslation(this._cameraPos, this._viewMatrix)
+      vec3.scale(this._cameraPos, this._cameraPos, -1)
 
       if (this._xrHitTestSource && this._enableHitTest) {
         const hitTestResults = frame.getHitTestResults(this._xrHitTestSource)
@@ -148,8 +123,7 @@ class ARUtils extends EventDispatcher {
 
     this.emit('onUpdate', {
       view: this._viewMatrix,
-      projection: this._projectionMatrix,
-      background: this._canvasBg
+      projection: this._projectionMatrix
     })
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, session.renderState.baseLayer.framebuffer)
@@ -168,6 +142,10 @@ class ARUtils extends EventDispatcher {
   get viewMatrix () { return this._viewMatrix }
 
   get projectionMatrix () { return this._projectionMatrix }
+
+  get lookDir () { return this._lookDir }
+
+  get cameraPos () { return this._cameraPos }
 
   get isSupported () { return this._isSupported }
 }
