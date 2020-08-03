@@ -1,13 +1,9 @@
 import '../scss/global.scss'
 
-import assets from './asset-list'
-import Assets from './Assets'
-import AssetsLoader from 'assets-loader'
-import SceneAR from './SceneAR'
-
-import ARUtils from './ARUtils'
-
 import alfrid, { GL } from 'alfrid'
+import SceneAR from './SceneAR'
+import ARUtils from './ARUtils'
+import { random } from 'randomutils'
 
 let btnAR
 let camera, ball, ballScale, scene
@@ -56,7 +52,7 @@ function arStarted ({ canvas, gl }) {
   window.addEventListener('touchstart', () => {
     console.log('touch start')
     hasStarted = true
-    scene.move()
+    // scene.move()
   })
 }
 
@@ -94,7 +90,6 @@ function logError (e) {
 function noSupport () {
   document.body.classList.add('no-xr')
   console.log(' no support ')
-/*
   const canvas = document.createElement('canvas')
   const container = document.body.querySelector('.container')
   canvas.className = 'Main-Canvas'
@@ -108,16 +103,22 @@ function noSupport () {
   scene.init()
 
   const camera = new alfrid.CameraPerspective()
-  camera.setPerspective(75 * Math.PI / 180, GL.aspectRatio, 0.1, 100)
-  const orbControl = new alfrid.OrbitalControl(camera, window, 9)
+  camera.setPerspective(75 * Math.PI / 180, GL.aspectRatio, 0.01, 10)
+  const orbControl = new alfrid.OrbitalControl(camera, window, 1)
   orbControl.rx.value = 0.5
   orbControl.ry.value = 0.5
 
   alfrid.Scheduler.addEF(() => {
     GL.viewport(0, 0, GL.width, GL.height)
-    GL.clear(0, 0, 0, 0)
+    scene.update()
+    GL.clear(1, 1, 1, 1)
     GL.setMatrices(camera)
     scene.render()
   })
-  */
+
+  window.addEventListener('keydown', (e) => {
+    if (e.keyCode === 32) {
+      scene.move(random(-1, 1), random(-1, 1))
+    }
+  })
 }

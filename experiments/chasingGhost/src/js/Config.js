@@ -1,5 +1,5 @@
 // Config.js
 
 export default {
-  numParticles: 128
+  numParticles: 128 * 2
 }

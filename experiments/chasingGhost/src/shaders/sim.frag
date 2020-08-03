@@ -38,8 +38,7 @@ void main(void) {
     acc += noise * uFoceNoise;
 
     vel += acc * mix(1.0, 2.0, extra.y) * 0.0015;
-    vel *= 0.98;
-    
+    vel *= 0.95;
     
     gl_FragColor = vec4(vel, 1.0);
 }

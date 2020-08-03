@@ -1,6 +1,7 @@
 import alfrid, { GL } from 'alfrid'
 import Config from './Config'
 import getMeshSave from './utils/getMeshSave'
+import { biasMatrix } from './utils'
 import ARUtils from './ARUtils'
 
 import preload from './utils/preload'
@@ -12,10 +13,18 @@ import vsRender from 'shaders/render.vert'
 import fsRender from 'shaders/render.frag'
 import fsSim from 'shaders/sim.frag'
 import fsAddVel from 'shaders/addVel.frag'
+import vsFloor from 'shaders/floor.vert'
+import fsFloor from 'shaders/floor.frag'
 
 class SceneAR {
   init () {
     this._hasLoaded = false
+    this._isMoving = false
+
+    this._cameraLight = new alfrid.CameraOrtho()
+    const s = 1
+    this._cameraLight.ortho(-s, s, s, -s, 0.1, 5)
+    this._shadowMatrix = mat4.create()
 
     preload().then(() => this.onloaded()).catch(e => console.log('Error', e))
   }
@@ -44,6 +53,7 @@ class SceneAR {
     this._fboVel = new alfrid.FboPingPong(numParticles, numParticles, oSettings)
     this._fboExtra = new alfrid.FrameBuffer(numParticles, numParticles, oSettings)
     this._fboPosOrg = new alfrid.FrameBuffer(numParticles, numParticles, oSettings)
+    this._fboDepth = new alfrid.FrameBuffer(512, 512)
 
     const meshRender = (() => {
       const mesh = new alfrid.Mesh(GL.POINTS)
@@ -95,22 +105,20 @@ class SceneAR {
       .useProgram(alfrid.ShaderLibs.bigTriangleVert, fsSim)
       .setClearColor(0, 0, 0, 0)
 
-    console.log('this._drawSim', this._drawSim)
-
     this._drawAdd = new alfrid.Draw()
       .setMesh(alfrid.Geom.bigTriangle())
       .useProgram(alfrid.ShaderLibs.bigTriangleVert, fsAddVel)
       .setClearColor(0, 0, 0, 0)
 
+    this._drawFloor = new alfrid.Draw()
+      .setMesh(alfrid.Geom.plane(2, 2, 1, 'xz'))
+      .useProgram(vsFloor, fsFloor)
+      .uniform('color', 'vec3', [1, 0, 0])
+      .uniform('opacity', 'float', 1)
+
     // gui
     const { gui } = window
     gui.add(this, 'move')
-
-    window.addEventListener('keydown', e => {
-      if (e.keyCode === 32) {
-        this.move()
-      }
-    })
 
     this._hasLoaded = true
   }
@@ -119,7 +127,7 @@ class SceneAR {
     if (!this._hasLoaded) {
       return
     }
-
+    const { vec3 } = window
     this._drawSim
       .bindFrameBuffer(this._fboVel.write)
       .uniformTexture('uTexPos', this._fboPos.read.texture, 0)
@@ -142,49 +150,106 @@ class SceneAR {
       .draw()
 
     this._fboPos.swap()
+
+    // update shadow camera
+    const eye = vec3.clone(this._center.value)
+    eye[1] += 2.5
+    eye[0] += 1
+    eye[2] += 1.2
+    this._cameraLight.lookAt(eye, this._center.value, [0, 0, -1])
+
+    mat4.identity(this._shadowMatrix, this._shadowMatrix)
+    mat4.multiply(this._shadowMatrix, this._cameraLight.projection, this._cameraLight.viewMatrix)
+    mat4.multiply(this._shadowMatrix, biasMatrix, this._shadowMatrix)
+
+    // update shadow map
+    this._fboDepth.bind()
+    GL.clear(0, 0, 0, 0)
+    GL.setMatrices(this._cameraLight)
+    this._drawRender
+      .uniformTexture('texturePos', this._fboPos.read.texture, 0)
+      .uniformTexture('textureDepth', this._fboPosOrg.texture, 1)
+      .uniform('uViewport', 'vec2', [GL.width, GL.height])
+      .uniform('uRenderDepth', 'float', 1.0)
+      .uniform('uShadowMatrix', 'mat4', this._shadowMatrix)
+      .draw()
+    this._fboDepth.unbind()
+
+    if (!ARUtils.isSupported) {
+      return
+    }
+
+    // check position
+
+    const c1 = vec2.fromValues(this._center.x, this._center.z)
+    const c2 = vec2.fromValues(ARUtils.cameraPos[0], ARUtils.cameraPos[2])
+
+    // const d = vec3.distance(this._center.value, ARUtils.cameraPos)
+    const d = vec2.distance(c1, c2)
+    // console.log('Distance to target', d, c1, c2)
+    if (d < 1.5) {
+      const dir = vec3.clone(ARUtils.lookDir)
+      vec3.mul(dir, dir, [1, 0, 1])
+      vec3.normalize(dir, dir)
+      vec3.scale(dir, dir, 4)
+      this.move(this._center.x + dir[0], this._center.z + dir[2])
+    }
   }
 
-  move () {
+  move (x, z) {
+    if (this._isMoving) {
+      return
+    }
+    console.log('move to ', x, z)
     this._forceNoise.value = 1
     this._forceFollow.value = 0
     setTimeout(() => {
       this._forceFollow.value = 1
       this._center.setY(2)
-      this._center.z = this._center.z > -2 ? -4 : 0
+      this._center.x = x
+      this._center.z = z
     }, 1000)
 
     setTimeout(() => {
       this._center.y = 0
       this._forceNoise.value = 0
+      this._isMoving = false
     }, 2000)
+    this._isMoving = true
   }
 
   render () {
     if (!this._hasLoaded) { return }
     // this.update()
-    this._bAxis.draw()
+    // this._bAxis.draw()
 
     this._drawRender
       .uniformTexture('texturePos', this._fboPos.read.texture, 0)
+      .uniformTexture('textureDepth', this._fboDepth.texture, 1)
       .uniform('uViewport', 'vec2', [GL.width, GL.height])
+      .uniform('uRenderDepth', 'float', 0.0)
+      .uniform('uShadowMatrix', 'mat4', this._shadowMatrix)
       .draw()
 
+    GL.pushMatrix()
+    const m = mat4.create()
+    mat4.translate(m, m, [this._center.x, -1.6, this._center.z])
+    GL.rotate(m)
+    this._drawFloor
+      .uniformTexture('texture', this._fboDepth.texture, 0)
+      .draw()
+    GL.popMatrix()
+
+    /*
     let s = 0.01
-    // const r = 1.0
-    // this._bBall.draw(this._center.value, [s, s, s], [1, 0, 0])
-    // this._bBall.draw([0, 0, -r], [s, s, s], [0, 0, 1])
-    // // this._bBall.draw([0, 0, r], [s, s, s], [0, 0, 1])
-    // this._bBall.draw([r, 0, 0], [s, s, s], [1, 1, 0])
     const t = vec3.clone(ARUtils.cameraPos)
     vec3.add(t, t, ARUtils.lookDir)
     this._bBall.draw(t, [s, s, s], [1, 1, 0])
-    // this._bDots.draw()
+    */
 
-    s = 128
-    GL.viewport(0, 0, s, s)
-    this._bCopy.draw(this._fboPos.read.texture)
-    GL.viewport(s, 0, s, s)
-    this._bCopy.draw(this._fboVel.read.texture)
+    // const s = 200
+    // GL.viewport(0, 0, s, s)
+    // this._bCopy.draw(this._fboDepth.texture)
   }
 }
 
