@@ -22,7 +22,7 @@ class SceneAR {
     this._isMoving = false
 
     this._cameraLight = new alfrid.CameraOrtho()
-    const s = 1
+    const s = 3
     this._cameraLight.ortho(-s, s, s, -s, 0.1, 5)
     this._shadowMatrix = mat4.create()
 
@@ -111,11 +111,12 @@ class SceneAR {
       .setClearColor(0, 0, 0, 0)
 
     this._drawFloor = new alfrid.Draw()
-      .setMesh(alfrid.Geom.plane(2, 2, 1, 'xz'))
+      .setMesh(alfrid.Geom.plane(3, 3, 1, 'xz'))
       .useProgram(vsFloor, fsFloor)
       .uniform('color', 'vec3', [1, 0, 0])
       .uniform('opacity', 'float', 1)
 
+    this._offsetShadow = new alfrid.EaseNumber(1)
     // gui
     const { gui } = window
     gui.add(this, 'move')
@@ -169,7 +170,7 @@ class SceneAR {
     this._drawRender
       .uniformTexture('texturePos', this._fboPos.read.texture, 0)
       .uniformTexture('textureDepth', this._fboPosOrg.texture, 1)
-      .uniform('uViewport', 'vec2', [GL.width, GL.height])
+      .uniform('uViewport', 'vec2', [1024, 1024])
       .uniform('uRenderDepth', 'float', 1.0)
       .uniform('uShadowMatrix', 'mat4', this._shadowMatrix)
       .draw()
@@ -201,6 +202,7 @@ class SceneAR {
       return
     }
     console.log('move to ', x, z)
+    this._offsetShadow.value = 1
     this._forceNoise.value = 1
     this._forceFollow.value = 0
     setTimeout(() => {
@@ -214,6 +216,7 @@ class SceneAR {
       this._center.y = 0
       this._forceNoise.value = 0
       this._isMoving = false
+      this._offsetShadow.value = 1
     }, 2000)
     this._isMoving = true
   }
@@ -229,6 +232,7 @@ class SceneAR {
       .uniform('uViewport', 'vec2', [GL.width, GL.height])
       .uniform('uRenderDepth', 'float', 0.0)
       .uniform('uShadowMatrix', 'mat4', this._shadowMatrix)
+      .uniform('uShadowStrength', 'float', this._offsetShadow.value)
       .draw()
 
     GL.pushMatrix()
@@ -236,6 +240,7 @@ class SceneAR {
     mat4.translate(m, m, [this._center.x, -1.6, this._center.z])
     GL.rotate(m)
     this._drawFloor
+      .uniform('uShadowMatrix', 'mat4', this._shadowMatrix)
       .uniformTexture('texture', this._fboDepth.texture, 0)
       .draw()
     GL.popMatrix()

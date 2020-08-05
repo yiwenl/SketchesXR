@@ -12,9 +12,12 @@ uniform mat4 uShadowMatrix;
 
 varying vec2 vTextureCoord;
 varying vec3 vNormal;
+varying vec4 vShadowCoord;
 
 void main(void) {
-    gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(aVertexPosition, 1.0);
+    vec4 wsPos = uModelMatrix * vec4(aVertexPosition, 1.0);
+    gl_Position = uProjectionMatrix * uViewMatrix * wsPos;
     vTextureCoord = aTextureCoord;
     vNormal = aNormal;
+    vShadowCoord = uShadowMatrix * wsPos;
 }

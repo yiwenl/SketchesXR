@@ -90,7 +90,7 @@ function logError (e) {
 function noSupport () {
   document.body.classList.add('no-xr')
   console.log(' no support ')
-  /*
+/*
   const canvas = document.createElement('canvas')
   const container = document.body.querySelector('.container')
   canvas.className = 'Main-Canvas'
@@ -122,5 +122,6 @@ function noSupport () {
       scene.move(random(-1, 1), random(-1, 1))
     }
   })
+
   */
 }

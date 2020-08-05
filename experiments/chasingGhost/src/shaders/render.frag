@@ -7,6 +7,7 @@ varying vec2 vTextureCoord;
 uniform sampler2D texture;
 uniform sampler2D textureDepth;
 uniform float uRenderDepth;
+uniform float uShadowStrength;
 
 varying vec4 vShadowCoord;
 varying vec3 vDebug;
@@ -57,6 +58,7 @@ void main(void) {
 		vec4 shadowCoord    = vShadowCoord / vShadowCoord.w;
 		float s             = PCFShadow(textureDepth, uMapSize, shadowCoord);
 		s                   = mix(s, 1.0, .4);
+		s 									= mix(1.0, s, uShadowStrength);
 
     gl_FragColor = vec4(vec3(g * s), 1.0);
 
