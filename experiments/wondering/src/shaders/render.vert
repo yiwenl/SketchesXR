@@ -36,7 +36,7 @@ void main(void) {
     }
     vec3 data = texture2D(uDataMap, aUV).xyz;
 
-    pos *= mix(1.0, 1.5, data.r);
+    pos *= mix(1.0, 1.5, data.r) * aExtra.x;
 
     // opening scale
     pos *= uOffsetOpen;

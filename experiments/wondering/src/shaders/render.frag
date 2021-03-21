@@ -10,6 +10,6 @@ varying vec3 vColor;
 #define LIGHT vec3(1.0, 1.0, 1.0)
 
 void main(void) {
-    float g = diffuse(vNormal, LIGHT, .5);
+    float g = diffuse(vNormal, LIGHT, .5) * 1.5;
     gl_FragColor = vec4(vColor * vec3(g), 1.0);
 }
