@@ -1,16 +1,12 @@
 const path = require("path");
 const pathOutput = path.resolve(__dirname, "dist");
-
-// plugins
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 
-// settings
 const env = process.env.NODE_ENV;
 const isProd = env === "production";
-const mode = env === isProd ? "production" : "development";
-console.log("start webpack, env : ", env, isProd);
-
+console.log("Environment isProd :", isProd);
+console.log(path.resolve(__dirname, "../../src/alfrid.js"));
 const entry = isProd
   ? { app: "./src/js/app.js" }
   : { app: "./src/js/app.js", debug: "./src/js/debug/debug.js" };
@@ -27,13 +23,15 @@ const output = isProd
 const devtool = isProd ? "source-map" : "inline-source-map";
 
 module.exports = {
-  mode,
   entry,
   devtool,
   output,
   devServer: {
+    host: "0.0.0.0",
     contentBase: "./dist",
+    hot: true,
     https: true,
+    disableHostCheck: true,
   },
   module: {
     rules: [
@@ -45,11 +43,31 @@ module.exports = {
         },
       },
       {
-        test: /\.(sa|sc|c)ss$/,
+        test: /\.hbs$/,
+        exclude: /node_modules/,
+        use: {
+          loader: "handlebars-loader",
+        },
+      },
+      {
+        test: /\.html$/,
         use: [
-          isProd ? MiniCssExtractPlugin.loader : "style-loader",
-          "css-loader?url=false",
-          "sass-loader",
+          {
+            loader: "html-loader",
+            options: { minimize: true },
+          },
+        ],
+      },
+      {
+        test: /\.css$/,
+        use: [MiniCssExtractPlugin.loader, "css-loader"],
+      },
+      {
+        test: /\.scss$/,
+        use: [
+          "style-loader", // creates style nodes from JS strings
+          "css-loader", // translates CSS into CommonJS
+          "sass-loader", // compiles Sass to CSS, using Node Sass by default
         ],
       },
       {
@@ -58,6 +76,13 @@ module.exports = {
       },
     ],
   },
+  plugins: [
+    new MiniCssExtractPlugin({
+      filename: "[name].css",
+      chunkFilename: "[id].css",
+    }),
+    // new BundleAnalyzerPlugin()
+  ],
   optimization: {
     minimizer: [new TerserPlugin({ parallel: true })],
   },
@@ -67,10 +92,4 @@ module.exports = {
       shaders: path.resolve(__dirname, "src/shaders"),
     },
   },
-  plugins: [
-    new MiniCssExtractPlugin({
-      filename: "assets/css/main.css",
-    }),
-    // new BundleAnalyzerPlugin()
-  ],
 };
