@@ -134,6 +134,11 @@ class SceneApp extends Scene {
     GL.enable(GL.CULL_FACE);
     GL.enable(GL.DEPTH_TEST);
 
+    this._drawSave
+      .bindFrameBuffer(this._fbo.read)
+      .setClearColor(0, 0, 0, 1)
+      .draw();
+
     this.logState();
   }
 
@@ -188,7 +193,7 @@ class SceneApp extends Scene {
       .bindFrameBuffer(this._fboUniverse);
 
     // init particles
-    new DrawSave()
+    this._drawSave = new DrawSave()
       .bindFrameBuffer(this._fbo.read)
       .setClearColor(0, 0, 0, 1)
       .draw();
