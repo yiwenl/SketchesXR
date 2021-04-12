@@ -144,12 +144,18 @@ video {
   letter-spacing: 1px;
   font-size: 14px;
 
-  .no-xr & {
-    display: none;
-  }
+  display: none;
 
-  .xr-started & {
-    display: none;
+  // .no-xr & {
+  //   display: none;
+  // }
+
+  // .xr-started & {
+  //   display: none;
+  // }
+
+  .xr-ready & {
+    display: block;
   }
 }
 

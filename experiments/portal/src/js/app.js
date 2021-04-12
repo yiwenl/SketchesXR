@@ -52,7 +52,7 @@ function _init3D() {
 
   scene = new SceneApp();
 
-  if (process.env.NODE_ENV === "development") {
+  if (process.env.NODE_ENV === "development" && window.gui) {
     addControls(scene);
   }
 
@@ -70,6 +70,7 @@ function checkAR() {
 }
 
 function initStartButton() {
+  document.body.classList.add("xr-ready");
   const btnAR = document.body.querySelector(".btnAR");
   btnAR.addEventListener("click", () => {
     ARUtils.init(GL.gl).then((gl) => {
