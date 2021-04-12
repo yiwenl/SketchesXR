@@ -15,6 +15,8 @@ const addControls = (scene) => {
 
   setTimeout(() => {
     gui.add(oControl, "webgl2").listen();
+    gui.add(Config, "ringRadius", 0.05, 0.2).onFinishChange(Settings.reload);
+    gui.add(Config, "ringPosition", 0.05, 0.2).onFinishChange(Settings.reload);
     gui
       .add(Config, "colorIndex", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
       .onFinishChange(Settings.refresh);

@@ -12,15 +12,14 @@ import {
   CameraOrtho,
   ShaderLibs,
   EaseNumber,
-  TweenNumber,
 } from "alfrid";
 import { resize, biasMatrix } from "./utils";
 import Scheduler from "scheduling";
-import { random } from "randomutils";
+import { random, randomFloor } from "randomutils";
 
 import Config from "./Config";
 import Assets from "./Assets";
-import { isARSupported, setCamera, hitTest } from "./ARUtils";
+import { isARSupported, setCamera, hitTest, addEventListener } from "./ARUtils";
 import { mat4, vec2, vec3 } from "gl-matrix";
 
 // draw calls
@@ -89,6 +88,12 @@ class SceneApp extends Scene {
     this.openValue = 0;
     this.targetOpenValue = 0;
     this.open();
+
+    // this._offsetPulse = new EaseNumber(0, 0.1);
+    this.pulseValue = 0;
+    this.targetPulseValue = 0;
+    this.easingPulse = 0.1;
+    this.pulse();
 
     window.addEventListener("keydown", (e) => {
       if (e.code === "Space") {
@@ -178,7 +183,7 @@ class SceneApp extends Scene {
     if (mtxHit !== null && !this._hasStarted) {
       mat4.copy(this.mtxHit, mtxHit);
       this._hasStarted = true;
-      this._offsetHit.value = 0.5;
+      this._offsetHit.value = 0.0;
       this.open();
     }
   }
@@ -205,14 +210,20 @@ class SceneApp extends Scene {
       dir[0] = x;
       dir[1] = y;
       vec2.normalize(dir, dir);
-      vec2.rotate(dir, dir, [0, 0], PI * random(0.1, 0.2) * 0.5);
+      vec2.rotate(dir, dir, [0, 0], PI * random(0.1, 0.4) * 0.5);
 
       x += 0.5;
       y += 0.5;
 
-      f = random(1.5, 1.1) * 3;
-      radius = random(1.1, 1.5);
-      this._fluid.updateFlow([x, y], dir, f / num, radius, noise);
+      f = random(1.5, 1.1) * 2 + this.pulseValue * 1.0;
+      radius = random(0.5, 1.5) + this.pulseValue * 0.5;
+      this._fluid.updateFlow(
+        [x, y],
+        dir,
+        f / num,
+        radius,
+        noise + this.pulseValue
+      );
     }
 
     this._fluid.update();
@@ -232,10 +243,11 @@ class SceneApp extends Scene {
       .bindTexture("uExtraMap", this._fbo.read.getTexture(2), 2)
       .bindTexture("uDataMap", this._fbo.read.getTexture(3), 3)
       .bindTexture("uPosOrgMap", this._fboPos.texture, 4)
-      .bindTexture("uDensityMap", this._fluid.density, 5)
-      .bindTexture("uFluidMap", this._fluid.velocity, 6)
+      // .bindTexture("uDensityMap", this._fluid.density, 5)
+      .bindTexture("uFluidMap", this._fluid.velocity, 5)
       .uniform("uTime", Scheduler.getElapsedTime())
       .uniform("uOffsetOpen", 1)
+      .uniform("uSimScale", Config.ringRadius / 0.05)
       .uniform("uFloor", -Config.ringPosition)
       .draw();
     this._fbo.swap();
@@ -303,12 +315,29 @@ class SceneApp extends Scene {
       .draw();
   }
 
+  pulse() {
+    this.easingPulse = 0.1;
+    this.targetPulseValue = random(0.5, 1);
+    setTimeout(() => {
+      this.easingPulse = 0.05;
+      this.targetPulseValue = 0;
+    }, 1000);
+
+    let delay = randomFloor(1600, 2000);
+    const fps = 90;
+    delay = Math.floor(delay / fps) * fps;
+
+    setTimeout(() => this.pulse(), delay);
+  }
+
   render() {
-    this.openValue += (this.targetOpenValue - this.openValue) * 0.05;
+    this.openValue += (this.targetOpenValue - this.openValue) * 0.025;
+    this.pulseValue +=
+      (this.targetPulseValue - this.pulseValue) * this.easingPulse;
     const mtx = mat4.create();
     let s;
     if (!this._hasPresented) {
-      const bg = 0.1;
+      const bg = 0.01;
       GL.clear(bg, bg, bg, 1);
     } else {
       setCamera(GL, this.camera);
@@ -324,7 +353,7 @@ class SceneApp extends Scene {
 
     GL.setModelMatrix(this.mtxHit);
     s = this._offsetHit.value * 0.01;
-    this._dBall.draw([0, 0, 0], [s, s, s], [1, 0, 0]);
+    this._dBall.draw([0, 0, 0], [s, s, s], [1, 1, 1]);
 
     this._renderParticles(true);
     this._drawDisk

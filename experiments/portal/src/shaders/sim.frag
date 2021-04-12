@@ -8,9 +8,10 @@ uniform sampler2D uPosOrgMap;
 uniform sampler2D uVelMap;
 uniform sampler2D uExtraMap;
 uniform sampler2D uDataMap;
-uniform sampler2D uDensityMap;
+// uniform sampler2D uDensityMap;
 uniform sampler2D uFluidMap;
 
+uniform float uSimScale;
 uniform float uTime;
 uniform float uFloor;
 uniform float uOffsetOpen;
@@ -22,8 +23,12 @@ layout (location = 3) out vec4 oFragColor3;
 
 #pragma glslify: curlNoise = require(glsl-utils/curlNoise.glsl)
 
-#define FLUID_MAP_SIZE 0.25
+
+
+// #define FLUID_MAP_SIZE 0.5
+
 vec2 getFluidUV(vec3 pos) {
+    float FLUID_MAP_SIZE = 0.25 * uSimScale;
     vec2 uv = pos.xy;
     return uv / FLUID_MAP_SIZE * .5 + .5;
 }
@@ -39,7 +44,7 @@ void main(void) {
     float offsetOpen = uOffsetOpen;
 
     float life = data.x;
-    life -= mix(1.0, 2.0, data.y) * 0.005;
+    life -= mix(1.0, 1.5, data.y) * 0.005;
 
     vec3 acc = vec3(0.0);
 
@@ -60,8 +65,8 @@ void main(void) {
 
 
     vec2 uvFluid = getFluidUV(pos);
-    float density = texture(uDensityMap, uvFluid).x; 
-    density = mix(density, 1.0, .75);
+    // float density = texture(uDensityMap, uvFluid).x; 
+    // density = mix(density, 1.0, .75);
     vec3 fluid = texture(uFluidMap, uvFluid).xyz;
     fluid /= 256.0;
 
@@ -72,7 +77,7 @@ void main(void) {
         vel *= 0.5;
     }
 
-    float minRadius = 0.03 * offsetOpen;
+    float minRadius = 0.03 * offsetOpen * uSimScale;
     if(length(pos.xy) < minRadius) {
         pos.xy = normalize(pos.xy) * minRadius;
         float speed = length(vel.xy);

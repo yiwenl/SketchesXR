@@ -1,5 +1,6 @@
 import Scheduler from "scheduling";
 import { mat4 } from "gl-matrix";
+import EventEmitter from "events";
 
 let isARSupported = false;
 
@@ -15,6 +16,7 @@ let xrHitTestSource;
 let frame;
 
 let mtxHit = mat4.create();
+let emitter = new EventEmitter();
 
 const checkSupported = function checkSupported() {
   return new Promise((resolve, reject) => {
@@ -85,6 +87,7 @@ const init = function(mGl) {
 // animation frame
 function loop(t, mFrame) {
   frame = mFrame;
+  emitter.emit("frame", frame);
   session.requestAnimationFrame((t, frame) => loop(t, frame));
 }
 
@@ -120,6 +123,11 @@ function setCamera(GL, mCamera, mBind = true) {
   }
 }
 
+// event
+function addEventListener(mEventName, listener) {
+  emitter.on(mEventName, listener);
+}
+
 // get hit test result
 function hitTest() {
   if (!frame || !xrHitTestSource) {
@@ -146,4 +154,5 @@ export {
   setCamera,
   bind,
   hitTest,
+  addEventListener,
 };
