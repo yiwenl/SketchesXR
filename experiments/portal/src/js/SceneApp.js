@@ -106,6 +106,14 @@ class SceneApp extends Scene {
     });
   }
 
+  logState() {
+    const { gl } = GL;
+    const STATES = ["CULL_FACE", "DEPTH_TEST"];
+    STATES.forEach((state) => {
+      console.log(state, gl.getParameter(gl[state]));
+    });
+  }
+
   open() {
     this.openValue = 0;
     this.targetOpenValue = 1;
@@ -125,6 +133,8 @@ class SceneApp extends Scene {
     GL.enableAlphaBlending();
     GL.enable(GL.CULL_FACE);
     GL.enable(GL.DEPTH_TEST);
+
+    this.logState();
   }
 
   _initTextures() {
