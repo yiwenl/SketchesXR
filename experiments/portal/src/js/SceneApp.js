@@ -48,6 +48,7 @@ class SceneApp extends Scene {
     this.orbitalControl.rx.setTo(0.3);
     this.orbitalControl.ry.setTo(0.3);
     this.orbitalControl.radius.setTo(0.75);
+    this.orbitalControl.lock();
 
     // hit
     const { ringPosition } = Config;
@@ -389,16 +390,9 @@ class SceneApp extends Scene {
     if (Config.debug) {
       mat4.mul(mtx, this.mtxHit, this.mtxDebug);
       GL.setModelMatrix(mtx);
-      // this._debugFluid.bindTexture("texture", this._fluid.velocity, 0).draw();
-      s = 200;
+      s = 100;
       GL.viewport(0, 0, s, s);
-      this._dCopy.draw(this._fboShadow.depthTexture);
-      // this._dCopy.draw(this._fluid.density);
-      GL.viewport(s, 0, s, s);
-      this._dCopy.draw(this._fboUniverse.texture);
-      // this._dCopy.draw(this._fluid.velocity);
-      // GL.viewport(s * 2, 0, s, s);
-      // this._dCopy.draw(this._fbo.read.getTexture(3));
+      this._dCopy.draw(this._fbo.read.getTexture(0));
     }
   }
 
