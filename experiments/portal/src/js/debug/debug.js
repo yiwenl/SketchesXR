@@ -15,6 +15,6 @@ if (GL.isMobile) {
 
 // STATS
 const stats = new Stats();
-// !GL.isMobile && document.body.appendChild(stats.domElement);
-document.body.appendChild(stats.domElement);
+!GL.isMobile && document.body.appendChild(stats.domElement);
+// document.body.appendChild(stats.domElement);
 Scheduler.addEF(() => stats.update());

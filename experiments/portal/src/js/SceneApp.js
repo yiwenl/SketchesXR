@@ -28,6 +28,7 @@ import DrawRender from "./DrawRender";
 import DrawUniverse from "./DrawUniverse";
 import DrawDisk from "./DrawDisk";
 import DrawVignette from "./DrawVignette";
+import DrawMark from "./DrawMark";
 
 // fluid simulation
 import FluidSimulation from "./fluid-sim";
@@ -145,6 +146,8 @@ class SceneApp extends Scene {
     this._dBall = new DrawBall();
     this._dAxis = new DrawAxis();
     this._dCamera = new DrawCamera();
+
+    this._drawMark = new DrawMark();
 
     let s = 0.5;
     this._debugFluid = new Draw()
@@ -359,6 +362,8 @@ class SceneApp extends Scene {
     GL.setModelMatrix(this.mtxHit);
     s = this._offsetHit.value * 0.01;
     this._dBall.draw([0, 0, 0], [s, s, s], [1, 1, 1]);
+
+    this._drawMark.uniform("uOffset", this._offsetHit.value).draw();
 
     this._renderParticles(true);
     this._drawDisk

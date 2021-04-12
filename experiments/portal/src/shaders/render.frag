@@ -14,7 +14,7 @@ float samplePCF3x3( vec4 sc )
 {
     const int s = 2;
     float shadow = 0.0;
-    float bias = 0.005;
+    float bias = 0.01;
     float threshold = sc.z - bias;
 
     shadow += step(threshold, textureProjOffset( uDepthMap, sc, ivec2(-s,-s) ).r);
