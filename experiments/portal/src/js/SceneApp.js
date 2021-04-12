@@ -120,6 +120,11 @@ class SceneApp extends Scene {
     mat4.identity(this.mtxHit);
     this._particleScale = 1;
     this._hasPresented = true;
+
+    // resettting state
+    GL.enableAlphaBlending();
+    GL.enable(GL.CULL_FACE);
+    GL.enable(GL.DEPTH_TEST);
   }
 
   _initTextures() {
