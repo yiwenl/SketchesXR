@@ -72,6 +72,8 @@ const init = function(mGl) {
         session.requestReferenceSpace("local").then((refSpace) => {
           xrRefSpace = refSpace;
 
+          console.log(session);
+
           loop();
           // set animation frame source
           Scheduler.setRequestAnimationFrameSource(session);
@@ -144,6 +146,10 @@ function hitTest() {
   }
 }
 
+function endXR() {
+  return session.end();
+}
+
 export {
   isARSupported,
   session,
@@ -155,4 +161,5 @@ export {
   bind,
   hitTest,
   addEventListener,
+  endXR,
 };
