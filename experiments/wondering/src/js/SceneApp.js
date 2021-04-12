@@ -61,6 +61,9 @@ class SceneApp extends Scene {
     this._tColorPrev = Assets.get(`00${this._prevIndex}`);
     this._tColorCurr = Assets.get(`00${this._currIndex}`);
 
+    this._tColorPrev.bind();
+    this._tColorCurr.bind();
+
     console.log(this._tColorPrev, this._tColorCurr);
 
     GL.enable(GL.DEPTH_TEST);
