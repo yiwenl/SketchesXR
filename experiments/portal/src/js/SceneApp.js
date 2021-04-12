@@ -19,7 +19,7 @@ import { random, randomFloor } from "randomutils";
 
 import Config from "./Config";
 import Assets from "./Assets";
-import { isARSupported, setCamera, hitTest, addEventListener } from "./ARUtils";
+import { isARSupported, setCamera, hitTest } from "./ARUtils";
 import { mat4, vec2, vec3 } from "gl-matrix";
 
 // draw calls
@@ -27,6 +27,7 @@ import DrawSave from "./DrawSave";
 import DrawRender from "./DrawRender";
 import DrawUniverse from "./DrawUniverse";
 import DrawDisk from "./DrawDisk";
+import DrawVignette from "./DrawVignette";
 
 // fluid simulation
 import FluidSimulation from "./fluid-sim";
@@ -85,6 +86,7 @@ class SceneApp extends Scene {
     this.resize();
 
     // animation
+    this._offsetVignette = new EaseNumber(1, 0.1);
     this.openValue = 0;
     this.targetOpenValue = 0;
     this.open();
@@ -110,6 +112,7 @@ class SceneApp extends Scene {
   present() {
     this.openValue = 0;
     this.targetOpenValue = 0;
+    this._offsetVignette.value = 0;
 
     window.addEventListener("touchstart", (e) => this._onTouch());
     mat4.identity(this.mtxHit);
@@ -175,6 +178,8 @@ class SceneApp extends Scene {
     GL.clear(0, 0, 0, 1);
     this._dCopy.draw(this._fbo.read.getTexture(0), 0);
     this._fboPos.unbind();
+
+    this._drawVignette = new DrawVignette();
   }
 
   _onTouch() {
@@ -366,6 +371,15 @@ class SceneApp extends Scene {
       .uniform("uShadowMatrix", this._mtxShadow)
       .bindTexture("uDepthMap", this._fboShadow.depthTexture, 0)
       .draw();
+
+    if (this._offsetVignette.value > 0.01) {
+      GL.disable(GL.DEPTH_TEST);
+      this._drawVignette
+        .uniform("uRatio", GL.aspectRatio)
+        .uniform("uOpacity", this._offsetVignette.value)
+        .draw();
+      GL.enable(GL.DEPTH_TEST);
+    }
 
     if (Config.debug) {
       mat4.mul(mtx, this.mtxHit, this.mtxDebug);

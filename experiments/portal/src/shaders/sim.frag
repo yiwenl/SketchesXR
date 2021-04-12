@@ -23,10 +23,6 @@ layout (location = 3) out vec4 oFragColor3;
 
 #pragma glslify: curlNoise = require(glsl-utils/curlNoise.glsl)
 
-
-
-// #define FLUID_MAP_SIZE 0.5
-
 vec2 getFluidUV(vec3 pos) {
     float FLUID_MAP_SIZE = 0.25 * uSimScale;
     vec2 uv = pos.xy;
