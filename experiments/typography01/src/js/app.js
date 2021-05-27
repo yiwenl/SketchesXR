@@ -48,16 +48,16 @@ function _init3D() {
 
   scene = new SceneApp();
 
-  if (process.env.NODE_ENV === "development") {
-    addControls(scene);
-  }
+  // if (process.env.NODE_ENV === "development") {
+  //   addControls(scene);
+  // }
 
   checkAR();
 }
 
 function checkAR() {
   ARUtils.checkSupported().then((supported) => {
-    gui.add(ARUtils, "isARSupported").listen();
+    // gui.add(ARUtils, "isARSupported").listen();
 
     if (!supported) {
       document.body.classList.add("no-xr");

@@ -70,8 +70,8 @@ class DrawRings extends Draw {
 
     mesh
       .bufferInstance(posOffsets, "aPosOffset")
-      .bufferInstance(extras, "aExtra")
-      .bufferInstance(uvOffset, "aUVOffset");
+      .bufferInstance(extras, "aExtra");
+    // .bufferInstance(uvOffset, "aUVOffset");
 
     this.setMesh(mesh)
       .useProgram(vs, fs)

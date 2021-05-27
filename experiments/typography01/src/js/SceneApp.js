@@ -117,10 +117,6 @@ class SceneApp extends Scene {
   }
 
   _renderRings(mShadow) {
-    if (Math.random() > 0.95) {
-      console.log("this._offsetOpen.value", this._offsetOpen.value);
-    }
-    // const tDepth = mShadow ? this._fboShadow.depthTexture : this._textureTexts;
     GL.disable(GL.CULL_FACE);
     GL.setModelMatrix(this.mtxHit);
     this._drawRings

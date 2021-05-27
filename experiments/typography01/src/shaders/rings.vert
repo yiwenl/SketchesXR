@@ -3,7 +3,7 @@
 precision highp float;
 in vec3 aVertexPosition;
 in vec2 aTextureCoord;
-in vec2 aUVOffset;
+// in vec2 aUVOffset;
 in vec3 aPosOffset;
 in vec3 aExtra;
 
