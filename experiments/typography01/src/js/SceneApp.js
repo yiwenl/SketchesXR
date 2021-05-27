@@ -1,6 +1,8 @@
 import {
   GL,
   Scene,
+  Draw,
+  Geom,
   DrawBall,
   DrawCopy,
   DrawCamera,
@@ -17,7 +19,12 @@ import { vec3, mat4 } from "gl-matrix";
 import DrawRings from "./DrawRings";
 import Scheduler from "scheduling";
 
+// shaders
+import vs from "shaders/floor.vert";
+import fs from "shaders/floor.frag";
+
 const MAIN_SCALE = 5.0;
+// const MAIN_SCALE = 1.0;
 
 class SceneApp extends Scene {
   constructor() {
@@ -43,8 +50,8 @@ class SceneApp extends Scene {
     this._lightTarget = vec3.create();
     this._front = [0, 0, 1];
     this._cameraLight = new CameraOrtho();
-    let s = 0.15;
-    this._cameraLight.ortho(-s, s, s, -s, 0.05, 0.5);
+    let s = 0.15 * MAIN_SCALE;
+    this._cameraLight.ortho(-s, s, s, -s, 0.05 * MAIN_SCALE, 0.5 * MAIN_SCALE);
     this._cameraLight.lookAt(this._lightPos, this._lightTarget, this._front);
     mat4.mul(
       this._mtxShadow,
@@ -76,7 +83,7 @@ class SceneApp extends Scene {
     this._textureTexts.wrapS = this._textureTexts.wrapT = GL.REPEAT;
     this._textureTexts.minFilter = this._textureTexts.magFilter = GL.LINEAR;
 
-    const fboSize = 4096;
+    const fboSize = 2048 / 2;
     this._fboShadow = new FrameBuffer(fboSize, fboSize);
     this._fboShadow.bind();
     GL.clear(1, 0, 0, 1);
@@ -89,8 +96,13 @@ class SceneApp extends Scene {
     this._dCamera = new DrawCamera();
 
     this._drawRings = new DrawRings();
-    const s = 0.02;
+    let s = 0.02;
     this._drawRings.container.scaleX = this._drawRings.container.scaleY = this._drawRings.container.scaleZ = s;
+
+    // floor
+    s = 0.5 * MAIN_SCALE;
+    const mesh = Geom.plane(s, s, 1, "xz");
+    this._drawFloor = new Draw().setMesh(mesh).useProgram(vs, fs);
   }
 
   _onTouch() {
@@ -117,11 +129,12 @@ class SceneApp extends Scene {
   }
 
   _renderRings(mShadow) {
+    const tDepth = mShadow ? this._fboShadow.depthTexture : this._textureTexts;
     GL.disable(GL.CULL_FACE);
     GL.setModelMatrix(this.mtxHit);
     this._drawRings
       .bindTexture("textureTexts", this._textureTexts, 0)
-      // .bindTexture("textureDepth", tDepth, 1)
+      .bindTexture("textureDepth", tDepth, 1)
       // .bindTexture("textureColor", tColor, 2)
       .uniform("uTime", -Scheduler.getElapsedTime() * 0.1)
       .uniform("uLightPos", this._lightPos)
@@ -139,7 +152,7 @@ class SceneApp extends Scene {
     if (!isARSupported) {
       GL.clear(0, 0, 0, 1);
     } else {
-      // this._updateShadowMap();
+      this._updateShadowMap();
       setCamera(GL, this.camera);
 
       if (!this._hasStarted) {
@@ -149,19 +162,19 @@ class SceneApp extends Scene {
           mat4.copy(this.mtxHit, mtxHit);
 
           vec3.transformMat4(this._lightTarget, [0, 0, 0], this.mtxHit);
-          // vec3.copy(this._lightPos, this._lightTarget);
-          // this._lightPos[1] += 0.5;
-          // this._cameraLight.lookAt(
-          //   this._lightPos,
-          //   this._lightTarget,
-          //   this._front
-          // );
-          // mat4.mul(
-          //   this._mtxShadow,
-          //   this._cameraLight.projection,
-          //   this._cameraLight.view
-          // );
-          // mat4.mul(this._mtxShadow, biasMatrix, this._mtxShadow);
+          vec3.copy(this._lightPos, this._lightTarget);
+          this._lightPos[1] += 0.5 * MAIN_SCALE;
+          this._cameraLight.lookAt(
+            this._lightPos,
+            this._lightTarget,
+            this._front
+          );
+          mat4.mul(
+            this._mtxShadow,
+            this._cameraLight.projection,
+            this._cameraLight.view
+          );
+          mat4.mul(this._mtxShadow, biasMatrix, this._mtxShadow);
         }
       }
     }
@@ -173,12 +186,12 @@ class SceneApp extends Scene {
 
     GL.setModelMatrix(this.mtxHit);
     this._renderRings(true);
-
-    // if (GL.isMobile) {
-    //   s = GL.width / 2;
-    //   GL.viewport(0, 0, s, s);
-    //   this._dCopy.draw(this._fboShadow.depthTexture);
-    // }
+    GL.setModelMatrix(this.mtxHit);
+    this._drawFloor
+      .bindTexture("textureDepth", this._fboShadow.depthTexture, 0)
+      .uniform("uShadowMatrix", "mat4", this._mtxShadow)
+      .uniform("uOffsetOpen", this._offsetOpen.value)
+      .draw();
   }
 
   resize() {
