@@ -1,0 +1,108 @@
+.App-LinkToAbout {
+  position: fixed;
+  padding: 25px;
+  color: black;
+  font-family: Arial Black;
+  text-decoration: none;
+}
+
+.App-LinkToAbout svg {
+  width: 20px;
+  height: 20px;
+  fill: #666;
+}
+
+/*experiment.scss*/
+
+.Experiment-List {
+  max-width: 1215px;
+  margin: 0 auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  align-content: flex-start;
+  flex-wrap: wrap;
+  padding-top: 50px;
+}
+
+@media (max-width: 1215px) {
+  .Experiment-List {
+    max-width: 900px;
+  }
+}
+
+@media (max-width: 915px) {
+  .Experiment-List {
+    max-width: 600px;
+  }
+}
+
+@media (max-width: 615px) {
+  .Experiment-List {
+    max-width: 300px;
+  }
+}
+
+.Experiment-Item {
+  width: 280px;
+  height: 280px;
+  box-sizing: border-box;
+  margin: 10px;
+  position: relative;
+
+  &:hover {
+    .Experiment-cover {
+      opacity: 0;
+    }
+  }
+}
+
+.Experiment-media {
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  position: absolute;
+}
+
+.Experiment-cover {
+  transition: opacity 0.25s ease-in-out;
+  z-index: 2;
+}
+
+.Experiment-video {
+  z-index: 1;
+}
+
+.Experiment-Content {
+  position: fixed;
+  z-index: 999;
+  width: 100%;
+  height: 100%;
+  border: 0;
+
+  top: 0;
+  left: 0;
+}
+
+.Experiment-CloseButton {
+  position: fixed;
+  padding: 20px;
+  cursor: pointer;
+  z-index: 9999;
+  top: 0px;
+
+  opacity: 0.5;
+  transition: opacity 0.25s ease-out;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+    fill: #aaa;
+  }
+}
