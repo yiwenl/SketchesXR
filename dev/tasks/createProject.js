@@ -1,5 +1,4 @@
 const fs = require("fs-extra");
-const mkdirp = require("mkdirp");
 const experiments = require("../src/data/SiteModel.js");
 
 // constans
@@ -47,16 +46,15 @@ loadIndexFile()
     experiments.forEach(({ cover, title }, i) => {
       const folderPath = `../exps/${i + 1}`;
 
-      mkdirp(folderPath).then(
-        (o) => {
-          const expTitle = `Sketches XR | ${title}`;
-          const expURL = `"https://yiwenl.github.io/SketchesXR/exps/${i + 1}/"`;
-          const expCover = cover;
-          const pathTarget = `${folderPath}/index.html`;
-          writeFile(str, pathTarget, expTitle, expURL, expCover);
-        },
-        (e) => console.log("Error", e)
-      );
+      if (!fs.existsSync(folderPath)) {
+        fs.mkdirSync(folderPath);
+      }
+
+      const expTitle = `Sketches XR | ${title}`;
+      const expURL = `"https://yiwenl.github.io/SketchesXR/exps/${i + 1}/"`;
+      const expCover = cover;
+      const pathTarget = `${folderPath}/index.html`;
+      writeFile(str, pathTarget, expTitle, expURL, expCover);
     });
   })
   .catch((e) => {
