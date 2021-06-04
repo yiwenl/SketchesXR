@@ -1,0 +1,23 @@
+{
+  "name": "sketchesxr",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://yiwenl@github.com/yiwenl/SketchesXR.git"
+  },
+  "author": "Yi-Wen LIN",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yiwenl/SketchesXR/issues"
+  },
+  "homepage": "https://github.com/yiwenl/SketchesXR#readme",
+  "devDependencies": {
+    "fs-extra": "^10.0.0",
+    "mkdirp": "^1.0.4"
+  }
+}
