@@ -10,7 +10,7 @@ import { BrowserRouter as Router, Route } from "react-router-dom";
 
 function App() {
   return (
-    <Router>
+    <Router basename="/SketchesXR">
       <div className="App">
         <Route path="/" exact component={Home} />
         <Route path="/about" component={About} />
