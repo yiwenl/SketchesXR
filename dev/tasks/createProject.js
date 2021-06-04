@@ -1,24 +1,14 @@
 const fs = require("fs-extra");
-
 const mkdirp = require("mkdirp");
-const experiments = require("../dev/src/data/SiteModel.js");
+const experiments = require("../src/data/SiteModel.js");
 
 // constans
-const PATH_INDEX_FILE = "./index.html";
+const PATH_INDEX_FILE = "../index.html";
 
 // utils
 const replace = (str, a, b) => {
   return str.split(a).join(b);
 };
-
-const remove = (str, a) => {
-  return replace(str, a, "");
-};
-
-// DEBUG
-// const expTitle = "Sketches XR | Typography";
-// const expURL = `"https://yiwenl.github.io/SketchesXR/exps/1/"`;
-// const expCover = "assets/img/coverTypography.jpg";
 
 // load index file
 const loadIndexFile = () =>
@@ -27,18 +17,9 @@ const loadIndexFile = () =>
       if (err) {
         reject(err);
       } else {
-        // const cssPattern = /css.*\.css/g;
-        // const jsPattern = /js.*\.js/g;
-
-        // const cssPath = str.match(cssPattern);
-        // const jsPaths = str.match(jsPattern);
-
-        str = replace(str, "/SketchesXR/static", "../..");
+        str = replace(str, "/SketchesXR/static", "../../static");
         str = replace(str, "/SketchesXR/manifest.json", "../../manifest.json");
         str = replace(str, "/SketchesXR/favicon.ico", "../../favicon.ico");
-
-        // console.log(str);
-        // replace title
 
         resolve(str);
       }
@@ -46,6 +27,7 @@ const loadIndexFile = () =>
   });
 
 const writeFile = (str, pathTarget, title, url, cover) => {
+  console.log("Create index file : ", pathTarget, title, url);
   str = replace(str, "Sketches - XR", title);
   str = replace(str, "SketchesXR | Yi-Wen Lin", title);
   str = replace(str, `"http://yiwenl.github.io/SketchesXR/"`, url);
@@ -63,12 +45,10 @@ const writeFile = (str, pathTarget, title, url, cover) => {
 loadIndexFile()
   .then((str) => {
     experiments.forEach(({ cover, title }, i) => {
-      const folderPath = `./exps/${i + 1}`;
-      // console.log(i, title, cover, folderPath);
+      const folderPath = `../exps/${i + 1}`;
 
       mkdirp(folderPath).then(
         (o) => {
-          // console.log("done", i, folderPath);
           const expTitle = `Sketches XR | ${title}`;
           const expURL = `"https://yiwenl.github.io/SketchesXR/exps/${i + 1}/"`;
           const expCover = cover;
