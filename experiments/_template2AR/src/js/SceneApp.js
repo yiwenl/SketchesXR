@@ -1,24 +1,12 @@
-import {
-  GL,
-  Scene,
-  Geom,
-  DrawBall,
-  DrawCopy,
-  EaseNumber,
-  GLTexture,
-} from "alfrid";
-import Assets from "./Assets";
-import { resize } from "./utils";
+import { GL, Scene, DrawBall, DrawCopy, DrawAxis, EaseNumber } from "alfrid";
+import { resize, saveImage, getDateString } from "./utils";
 
+import Config from "./Config";
 import { isARSupported, setCamera, hitTest } from "./ARUtils";
 import { mat4 } from "gl-matrix";
 
-import vs from "shaders/trees.vert";
-import fs from "shaders/trees.frag";
-
-const logError = (e) => {
-  console.error(e);
-};
+let hasSaved = false;
+let canSave = false;
 
 class SceneApp extends Scene {
   constructor() {
@@ -42,6 +30,12 @@ class SceneApp extends Scene {
 
     // set size
     this.resize();
+
+    if (!GL.isMobile) {
+      setTimeout(() => {
+        canSave = true;
+      }, 500);
+    }
   }
 
   present() {
@@ -53,6 +47,7 @@ class SceneApp extends Scene {
   _initViews() {
     this._dCopy = new DrawCopy();
     this._dBall = new DrawBall();
+    this._dAxis = new DrawAxis();
   }
 
   _onTouch() {
@@ -83,12 +78,24 @@ class SceneApp extends Scene {
     GL.setModelMatrix(this.mtxHit);
     s = this._offsetHit.value * 0.01;
     this._dBall.draw([0, 0, 0], [s, s, s], [1, 0, 0]);
+    this._dAxis.draw();
+
+    if (canSave && !hasSaved && Config.autoSave) {
+      saveImage(GL.canvas, getDateString());
+      hasSaved = true;
+    }
   }
 
   resize() {
-    const { innerWidth, innerHeight } = window;
-    resize(innerWidth, innerHeight);
-    this.camera.setAspectRatio(GL.aspectRatio);
+    if (GL.isMobile) {
+      const { innerWidth, innerHeight } = window;
+      resize(innerWidth, innerHeight);
+      this.camera.setAspectRatio(GL.aspectRatio);
+    } else {
+      const pixelRatio = 2.0;
+      resize(1080 * pixelRatio, 1350 * pixelRatio);
+      this.camera.setAspectRatio(GL.aspectRatio);
+    }
   }
 }
 

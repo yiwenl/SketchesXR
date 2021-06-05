@@ -67,7 +67,7 @@
     "parse-dds": "^1.2.1",
     "querystringparser": "^0.1.1",
     "randomutils": "github:yiwenl/randomUtils",
-    "scheduling": "1.3.3",
+    "scheduling": "^1.3.5",
     "stats.js": "^0.17.0"
   }
 }

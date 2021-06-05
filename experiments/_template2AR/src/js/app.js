@@ -57,8 +57,6 @@ function _init3D() {
 
 function checkAR() {
   ARUtils.checkSupported().then((supported) => {
-    gui.add(ARUtils, "isARSupported").listen();
-
     if (!supported) {
       document.body.classList.add("no-xr");
     } else {
