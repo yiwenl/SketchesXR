@@ -11,6 +11,12 @@ const ExpModel = [
     url: "//yiwenl.github.io/SketchesXR/experiments/portal/dist/index.html",
     title: "Portal",
   },
+  {
+    cover: "assets/img/coverTypography02.jpg",
+    video: "assets/img/typography02.gif",
+    url: "//yiwenl.github.io/SketchesXR/experiments/typography02/dist/index.html",
+    title: "Typography",
+  },
 ];
 
 module.exports = ExpModel;
