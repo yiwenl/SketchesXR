@@ -42,7 +42,7 @@ void main(void) {
 	float s             = samplePCF3x3(shadowCoord);
     s = mix(s, 1.0, uShadowStrength);
 
-    vec3 color = colorParticle.rgb * vColor * s;
+    vec3 color = colorParticle.rgb * vColor * s * 1.25;
     
 
     oColor = vec4(color, 1.0);

@@ -14,6 +14,7 @@ let xrRefSpace;
 let xrViewerSpace;
 let xrHitTestSource;
 let frame;
+let cbSessionEnd;
 
 let mtxHit = mat4.create();
 let emitter = new EventEmitter();
@@ -69,6 +70,11 @@ const init = function(mGl) {
       .then(makeXRCompatible)
       .then(initHitTesting)
       .then(() => {
+        // session end handling
+        session.onend = () => {
+          cbSessionEnd && cbSessionEnd();
+        };
+
         session.requestReferenceSpace("local").then((refSpace) => {
           xrRefSpace = refSpace;
 
@@ -150,6 +156,11 @@ function endXR() {
   return session.end();
 }
 
+// session end callback
+function onSessionEnd(mCb) {
+  cbSessionEnd = mCb;
+}
+
 export {
   isARSupported,
   session,
@@ -162,4 +173,5 @@ export {
   hitTest,
   addEventListener,
   endXR,
+  onSessionEnd,
 };

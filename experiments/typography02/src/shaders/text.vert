@@ -26,7 +26,7 @@ varying vec3 vNormal;
 
 void main(void) {
     float size = 0.05 * uOffset;
-    
+
     float theta = -aTextureCoord.x * PI * 2.0;
     vec3 pos = vec3(0.0, aVertexPosition.y * size, size);
     pos.yz = rotate(pos.yz, aVertexPosition.z * PI * 2.0 + aTextureCoord.x * PI * 3.0 - uTime);
@@ -35,8 +35,9 @@ void main(void) {
 
 
     // instancing
-    float scale = mix(0.5, 1.5, aExtra.x);
-    pos *= scale;
+    // float scale = mix(0.5, 1.5, aExtra.x);
+    pos *= aExtra.x;
+    pos.yz = rotate(pos.yz, aExtra.z * PI * 2.0);
     pos.xz = rotate(pos.xz, aExtra.y * PI * 2.0);
     pos += aPosOffset;
 

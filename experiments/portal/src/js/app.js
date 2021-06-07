@@ -4,11 +4,12 @@ import "./utils/Capture";
 import { GL } from "alfrid";
 import * as ARUtils from "./ARUtils";
 
+import Config from "./Config";
 import Settings from "./Settings";
 import SceneApp from "./SceneApp";
 import preload from "./utils/preload";
 import addControls from "./debug/addControls";
-import Config from "./Config";
+import { randomFloor } from "randomutils";
 
 let canvas;
 let container;
@@ -30,6 +31,10 @@ function _init() {
 }
 
 function _init3D() {
+  if (GL.isMobile) {
+    Config.colorIndex = randomFloor(10);
+  }
+
   canvas = document.createElement("canvas");
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -64,9 +69,14 @@ function checkAR() {
     if (!supported) {
       document.body.classList.add("no-xr");
     } else {
+      document.body.classList.add("has-xr");
       initStartButton();
     }
   });
+
+  setTimeout(() => {
+    document.body.classList.add("hide-messages");
+  }, 3000);
 }
 
 function initStartButton() {
@@ -76,6 +86,10 @@ function initStartButton() {
     ARUtils.init(GL.gl).then((gl) => {
       container.removeChild(canvas);
       scene.present();
+
+      ARUtils.onSessionEnd(() => {
+        window.location.reload();
+      });
     });
   });
 }

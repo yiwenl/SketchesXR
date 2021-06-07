@@ -6,7 +6,7 @@ import {
   DrawBall,
   DrawCopy,
   // DrawAxis,
-  // DrawCamera,
+  DrawCamera,
   EaseNumber,
   CameraOrtho,
   FrameBuffer,
@@ -27,8 +27,8 @@ import fsFloor from "shaders/floor.frag";
 let hasSaved = false;
 let canSave = false;
 
-const GENERAL_SCALE = 1;
-const LIGHT_HEIGHT = 0.7;
+const GENERAL_SCALE = 5;
+const LIGHT_HEIGHT = 0.8;
 const RING_POSITION = 0.2;
 
 class SceneApp extends Scene {
@@ -48,7 +48,7 @@ class SceneApp extends Scene {
     this._lightPos = vec3.create();
     this._lightTarget = vec3.create();
     this._mtxShadow = mat4.create();
-    const r = 0.25 * GENERAL_SCALE;
+    const r = 0.5 * GENERAL_SCALE;
     this._cameraLight = new CameraOrtho(
       -r,
       r,
@@ -98,7 +98,7 @@ class SceneApp extends Scene {
     this._dCopy = new DrawCopy();
     this._dBall = new DrawBall();
     // this._dAxis = new DrawAxis();
-    // this._dCamera = new DrawCamera();
+    this._dCamera = new DrawCamera();
     this._drawMark = new DrawMark();
 
     let s = 0.5 * GENERAL_SCALE;
@@ -160,7 +160,7 @@ class SceneApp extends Scene {
   _renderText(mCrop) {
     GL.setModelMatrix(this.mtxWorld);
     this._drawText
-      .uniform("uTime", Scheduler.getElapsedTime() * 0.2)
+      .uniform("uTime", Scheduler.getElapsedTime() * 0.5)
       .uniform("uCrop", mCrop ? 1.0 : 0.0)
       .uniform("uOffset", this._offsetOpen.value)
       .draw();
@@ -169,7 +169,7 @@ class SceneApp extends Scene {
   render() {
     let s;
     if (!isARSupported) {
-      const g = 0.2;
+      const g = 0.1;
       GL.clear(g, g, g, 1);
       mat4.mul(this.mtxWorld, this.mtxHit, this._drawText.container.matrix);
       this._updateShadowMap();

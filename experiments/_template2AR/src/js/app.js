@@ -7,15 +7,11 @@ import * as ARUtils from "./ARUtils";
 import Settings from "./Settings";
 import SceneApp from "./SceneApp";
 import preload from "./utils/preload";
+import { logError } from "./utils";
 import addControls from "./debug/addControls";
-import Config from "./Config";
 
 let canvas;
 let container;
-
-const logError = (e) => {
-  console.error(e);
-};
 
 let scene;
 
@@ -60,9 +56,14 @@ function checkAR() {
     if (!supported) {
       document.body.classList.add("no-xr");
     } else {
+      document.body.classList.add("has-xr");
       initStartButton();
     }
   });
+
+  setTimeout(() => {
+    document.body.classList.add("hide-messages");
+  }, 3000);
 }
 
 function initStartButton() {
@@ -71,6 +72,11 @@ function initStartButton() {
     ARUtils.init(GL.gl).then((gl) => {
       container.removeChild(canvas);
       scene.present();
+
+      ARUtils.onSessionEnd(() => {
+        console.log("session end");
+        window.location.reload();
+      });
     });
   });
 }

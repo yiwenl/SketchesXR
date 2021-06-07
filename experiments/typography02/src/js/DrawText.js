@@ -59,14 +59,14 @@ class DrawText extends Draw {
     const posOffsets = [];
     const extras = [];
 
-    const numRings = 0;
+    const numRings = 4;
     const r = 0.5;
 
     posOffsets.push([0, 0, 0]);
     extras.push([0.5, 0, 0]);
     for (let i = 0; i < numRings; i++) {
       posOffsets.push([random(-r, r), random(0, r), random(-r, r)]);
-      extras.push([random(1), random(1), random(1)]);
+      extras.push([random(0.5, 1.5), random(1), random(1)]);
     }
 
     mesh

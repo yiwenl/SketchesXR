@@ -207,15 +207,15 @@ class SceneApp extends Scene {
   }
 
   _onTouch() {
-    const mtxHit = hitTest();
-
     if (this._hasStarted) {
-      console.log("end XR");
-      endXR().then(() => {
-        console.log("session ended");
-        window.location.reload();
-      });
+      // console.log("end XR");
+      // endXR().then(() => {
+      //   console.log("session ended");
+      //   window.location.reload();
+      // });
+      return;
     }
+    const mtxHit = hitTest();
 
     if (mtxHit !== null && !this._hasStarted) {
       mat4.copy(this.mtxHit, mtxHit);
@@ -389,7 +389,7 @@ class SceneApp extends Scene {
     }
 
     GL.setModelMatrix(this.mtxHit);
-    s = this._offsetHit.value * 0.01;
+    s = this._offsetHit.value * 0.005;
     this._dBall.draw([0, 0, 0], [s, s, s], [1, 1, 1]);
     this._drawMark.uniform("uOffset", this._offsetHit.value).draw();
 

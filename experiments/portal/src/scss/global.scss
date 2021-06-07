@@ -9,28 +9,7 @@ body {
   overflow: hidden;
   position: fixed;
 
-  $gradient0: #333333;
-  $gradient1: #000000;
-
-  /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#6d6d6d+0,000000+100 */
-  background: $gradient0; /* Old browsers */
-  background: -moz-radial-gradient(
-    center,
-    ellipse cover,
-    $gradient0 0%,
-    $gradient1 100%
-  ); /* FF3.6-15 */
-  background: -webkit-radial-gradient(
-    center,
-    ellipse cover,
-    $gradient0 0%,
-    $gradient1 100%
-  ); /* Chrome10-25,Safari5.1-6 */
-  background: radial-gradient(
-    ellipse at center,
-    $gradient0 0%,
-    $gradient1 100%
-  ); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  background: black;
 }
 
 html {
@@ -64,8 +43,6 @@ video {
 
   opacity: 1;
   transition: opacity 0.5s ease-out 0.25s;
-
-  position: absolute;
 
   .isLoading & {
     opacity: 0;
@@ -126,54 +103,71 @@ video {
 }
 
 .container-button {
-  position: absolute;
+  position: fixed;
+  z-index: 99;
   width: 100%;
   height: 100%;
   display: flex;
-  // align-items: center;
+  align-items: center;
   justify-content: center;
-  align-items: flex-end;
 }
 
 .btnAR {
-  width: 120px;
-  height: 40px;
-  // margin-top: 100%;
-  margin-bottom: 20%;
-  border-radius: 10px;
-  letter-spacing: 1px;
-  font-size: 14px;
+  width: 200px;
+  height: 50px;
+  position: fixed;
+  bottom: 20vh;
+  font-size: 15px;
+  letter-spacing: 2px;
+  border-radius: 5px;
 
-  display: none;
+  opacity: 0;
+  pointer-events: none;
 
-  // .no-xr & {
-  //   display: none;
-  // }
+  transition: opacity 0s ease-in-out;
 
-  // .xr-started & {
-  //   display: none;
-  // }
+  .has-xr & {
+    transition: opacity 0.5s ease-in-out;
+    pointer-events: auto;
+    opacity: 1;
+  }
 
-  .xr-ready & {
-    display: block;
+  .xr-started & {
+    opacity: 0;
   }
 }
 
 .text-no-support {
   color: white;
   font-size: 14px;
-  letter-spacing: 16px;
+  letter-spacing: 6px;
   text-align: center;
+  z-index: 99;
+  position: absolute;
+  bottom: 5vh;
 
-  display: none;
+  transition: opacity 0.5s ease-in-out;
+  pointer-events: none;
+  opacity: 0;
+
+  .hide-messages & {
+    opacity: 0;
+  }
 
   .no-xr & {
-    display: block;
+    // transition: opacity 0s ease-in-out;
+    opacity: 1;
+  }
+}
+
+@media (max-width: 615px) {
+  .text-no-support {
+    letter-spacing: 2px;
   }
 }
 
 .top-layer {
-  z-index: 99;
+  z-index: 200;
 }
 
 .webcam {
