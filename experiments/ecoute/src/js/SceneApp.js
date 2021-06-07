@@ -17,6 +17,7 @@ import Assets from "./Assets";
 import { resize, biasMatrix, saveImage, getDateString } from "./utils";
 
 import { isARSupported, setCamera, hitTest } from "./ARUtils";
+import DrawMark from "./DrawMark";
 import { vec3, mat4 } from "gl-matrix";
 
 import vs from "shaders/basic.vert";
@@ -39,10 +40,6 @@ class SceneApp extends Scene {
     this.orbitalControl.ry.setTo(0.3);
     this.orbitalControl.radius.setTo(1);
     this.orbitalControl.rx.limit(0.0, Math.PI / 2);
-
-    if (GL.isMobile) {
-      this.orbitalControl.lock();
-    }
 
     // shadow
     this._lightPos = vec3.create();
@@ -79,6 +76,8 @@ class SceneApp extends Scene {
     this._dBall = new DrawBall();
     this._dAxis = new DrawAxis();
     this._dCamera = new DrawCamera();
+    this._dMark = new DrawMark();
+
     const shader = new GLShader(vs, fs);
 
     const getDraw = (mId, mNormalScale) => {
@@ -108,6 +107,10 @@ class SceneApp extends Scene {
   }
 
   _onTouch() {
+    if (this._hasStarted) {
+      return;
+    }
+
     const mtxHit = hitTest();
     if (mtxHit !== null) {
       mat4.copy(this.mtxHit, mtxHit);
@@ -192,8 +195,9 @@ class SceneApp extends Scene {
     // this._dCamera.draw(this._cameraLight);
 
     GL.setModelMatrix(this.mtxHit);
-    s = this._offsetHit.value * 0.01;
-    this._dBall.draw([0, 0, 0], [s, s, s], [1, 0, 0]);
+    s = this._offsetHit.value * 0.005;
+    this._dBall.draw([0, 0, 0], [s, s, s], [1, 1, 1]);
+    this._dMark.uniform("uOffset", this._offsetHit.value).draw();
     // this._dAxis.draw();
 
     // draw floor and hide

@@ -13,6 +13,7 @@ let xrRefSpace;
 let xrViewerSpace;
 let xrHitTestSource;
 let frame;
+let cbSessionEnd;
 
 let mtxHit = mat4.create();
 
@@ -67,6 +68,11 @@ const init = function(mGl) {
       .then(makeXRCompatible)
       .then(initHitTesting)
       .then(() => {
+        // session end handling
+        session.onend = () => {
+          cbSessionEnd && cbSessionEnd();
+        };
+
         session.requestReferenceSpace("local").then((refSpace) => {
           xrRefSpace = refSpace;
 
@@ -136,6 +142,11 @@ function hitTest() {
   }
 }
 
+// session end callback
+function onSessionEnd(mCb) {
+  cbSessionEnd = mCb;
+}
+
 export {
   isARSupported,
   session,
@@ -146,4 +157,5 @@ export {
   setCamera,
   bind,
   hitTest,
+  onSessionEnd,
 };
