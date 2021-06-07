@@ -104,6 +104,7 @@ video {
 
 .container-button {
   position: fixed;
+  z-index: 99;
   width: 100%;
   height: 100%;
   display: flex;
@@ -149,13 +150,12 @@ video {
   pointer-events: none;
   opacity: 0;
 
-  .hide-messages & {
-    opacity: 0;
+  .no-xr & {
+    opacity: 1;
   }
 
-  .no-xr & {
-    // transition: opacity 0s ease-in-out;
-    opacity: 1;
+  .hide-messages & {
+    opacity: 0;
   }
 }
 

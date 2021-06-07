@@ -63,7 +63,7 @@ function checkAR() {
 
   setTimeout(() => {
     document.body.classList.add("hide-messages");
-  }, 3000);
+  }, 5000);
 }
 
 function initStartButton() {

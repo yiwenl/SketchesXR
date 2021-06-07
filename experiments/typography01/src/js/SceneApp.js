@@ -17,6 +17,7 @@ import { resize, biasMatrix } from "./utils";
 import { isARSupported, setCamera, hitTest, bind } from "./ARUtils";
 import { vec3, mat4 } from "gl-matrix";
 import DrawRings from "./DrawRings";
+import DrawMark from "./DrawMark";
 import Scheduler from "scheduling";
 
 // shaders
@@ -94,6 +95,7 @@ class SceneApp extends Scene {
     this._dCopy = new DrawCopy();
     this._dBall = new DrawBall();
     this._dCamera = new DrawCamera();
+    this._dMark = new DrawMark();
 
     this._drawRings = new DrawRings();
     let s = 0.02;
@@ -180,11 +182,12 @@ class SceneApp extends Scene {
     }
 
     s = this._offsetHit.value * 0.01;
-    this._dBall.draw(this._lightTarget, [s, s, s], [1, 0, 0]);
+    this._dBall.draw(this._lightTarget, [s, s, s], [1, 1, 1]);
     // this._dBall.draw(this._lightPos, [s, s, s], [1, 1, 0]);
     // this._dCamera.draw(this._cameraLight);
 
     GL.setModelMatrix(this.mtxHit);
+    this._dMark.uniform("uOffset", this._offsetHit.value).draw();
     this._renderRings(true);
     GL.setModelMatrix(this.mtxHit);
     this._drawFloor
