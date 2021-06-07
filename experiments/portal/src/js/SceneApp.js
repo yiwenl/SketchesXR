@@ -208,6 +208,7 @@ class SceneApp extends Scene {
 
   _onTouch() {
     if (this._hasStarted) {
+      Config.colorIndex = randomFloor(10);
       // console.log("end XR");
       // endXR().then(() => {
       //   console.log("session ended");
