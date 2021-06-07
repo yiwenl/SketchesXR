@@ -103,7 +103,8 @@ video {
 }
 
 .container-button {
-  position: absolute;
+  position: fixed;
+  z-index: 99;
   width: 100%;
   height: 100%;
   display: flex;
@@ -113,36 +114,59 @@ video {
 
 .btnAR {
   width: 200px;
-  height: 40px;
-  margin-top: 100%;
-  border-radius: 10px;
-  letter-spacing: 1px;
-  font-size: 14px;
+  height: 50px;
+  position: fixed;
+  bottom: 20vh;
+  font-size: 15px;
+  letter-spacing: 2px;
+  border-radius: 5px;
 
-  .no-xr & {
-    display: none;
+  opacity: 0;
+  pointer-events: none;
+
+  transition: opacity 0s ease-in-out;
+
+  .has-xr & {
+    transition: opacity 0.5s ease-in-out;
+    pointer-events: auto;
+    opacity: 1;
   }
 
   .xr-started & {
-    display: none;
+    opacity: 0;
   }
 }
 
 .text-no-support {
   color: white;
   font-size: 14px;
-  letter-spacing: 16px;
+  letter-spacing: 6px;
   text-align: center;
+  z-index: 99;
+  position: absolute;
+  bottom: 5vh;
 
-  display: none;
+  transition: opacity 0.5s ease-in-out;
+  pointer-events: none;
+  opacity: 0;
 
   .no-xr & {
-    display: block;
+    opacity: 1;
+  }
+
+  .hide-messages & {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 615px) {
+  .text-no-support {
+    letter-spacing: 2px;
   }
 }
 
 .top-layer {
-  z-index: 99;
+  z-index: 200;
 }
 
 .webcam {

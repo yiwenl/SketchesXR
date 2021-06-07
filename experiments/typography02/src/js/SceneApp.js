@@ -40,10 +40,6 @@ class SceneApp extends Scene {
     this.orbitalControl.ry.setTo(0.3);
     this.orbitalControl.radius.setTo(GENERAL_SCALE);
 
-    if (GL.isMobile) {
-      this.orbitalControl.lock();
-    }
-
     // shadow
     this._lightPos = vec3.create();
     this._lightTarget = vec3.create();
@@ -97,7 +93,6 @@ class SceneApp extends Scene {
   _initViews() {
     this._dCopy = new DrawCopy();
     this._dBall = new DrawBall();
-    // this._dAxis = new DrawAxis();
     this._dCamera = new DrawCamera();
     this._drawMark = new DrawMark();
 
@@ -160,7 +155,7 @@ class SceneApp extends Scene {
   _renderText(mCrop) {
     GL.setModelMatrix(this.mtxWorld);
     this._drawText
-      .uniform("uTime", Scheduler.getElapsedTime() * 0.5)
+      .uniform("uTime", Scheduler.getElapsedTime() * 0.75)
       .uniform("uCrop", mCrop ? 1.0 : 0.0)
       .uniform("uOffset", this._offsetOpen.value)
       .draw();
@@ -169,7 +164,7 @@ class SceneApp extends Scene {
   render() {
     let s;
     if (!isARSupported) {
-      const g = 0.1;
+      const g = 0.2;
       GL.clear(g, g, g, 1);
       mat4.mul(this.mtxWorld, this.mtxHit, this._drawText.container.matrix);
       this._updateShadowMap();
@@ -206,6 +201,10 @@ class SceneApp extends Scene {
       .draw();
 
     this._renderText(false);
+    // this._drawText.rings.forEach(({ pos, radius }) => {
+    //   const r = radius * 0.25;
+    //   this._dBall.draw(pos, [r, r, r], [1, 0, 0], 0.25);
+    // });
 
     // s = 400;
     // GL.viewport(0, 0, s, s);

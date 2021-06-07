@@ -39,5 +39,5 @@ void main(void) {
         s = 0.0;
     }
 
-    oColor = vec4(vec3(0.0), s * 0.5 * uOpacity);
+    oColor = vec4(vec3(0.0), s * 0.75 * uOpacity);
 }

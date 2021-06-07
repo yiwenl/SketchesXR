@@ -60,9 +60,14 @@ function checkAR() {
     if (!supported) {
       document.body.classList.add("no-xr");
     } else {
+      document.body.classList.add("has-xr");
       initStartButton();
     }
   });
+
+  setTimeout(() => {
+    document.body.classList.add("hide-messages");
+  }, 5000);
 }
 
 function initStartButton() {
@@ -71,6 +76,11 @@ function initStartButton() {
     ARUtils.init(GL.gl).then((gl) => {
       container.removeChild(canvas);
       scene.present();
+
+      ARUtils.onSessionEnd(() => {
+        console.log("session end");
+        window.location.reload();
+      });
     });
   });
 }

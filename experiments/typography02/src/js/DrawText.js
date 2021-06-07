@@ -3,6 +3,7 @@ import { Draw, Mesh, Object3D, GL } from "alfrid";
 import Assets from "./Assets";
 import vs from "shaders/text.vert";
 import fs from "shaders/text.frag";
+import { vec3 } from "gl-matrix";
 import { randomFloor, random } from "randomutils";
 
 class DrawText extends Draw {
@@ -59,15 +60,48 @@ class DrawText extends Draw {
     const posOffsets = [];
     const extras = [];
 
-    const numRings = 4;
+    const numRings = 5;
     const r = 0.5;
 
-    posOffsets.push([0, 0, 0]);
-    extras.push([0.5, 0, 0]);
-    for (let i = 0; i < numRings; i++) {
-      posOffsets.push([random(-r, r), random(0, r), random(-r, r)]);
-      extras.push([random(0.5, 1.5), random(1), random(1)]);
-    }
+    const rings = [{ pos: [0, 0, 0], radius: 0.5 }];
+
+    let tries = 0;
+    let pos, radius;
+
+    const checkHit = (pos, radius) => {
+      let d;
+      let hit = false;
+      rings.forEach((ring) => {
+        d = vec3.distance(pos, ring.pos);
+        if (d < (ring.radius + radius) * 0.25) hit = true;
+      });
+
+      if (!hit) {
+        rings.push({
+          pos,
+          radius,
+        });
+      }
+    };
+    do {
+      pos = [random(-r, r), random(0, r), random(-r, r)];
+      radius = random(0.5, 1.5);
+      checkHit(pos, radius);
+    } while (rings.length < numRings && tries++ < 1000);
+
+    this.rings = rings;
+
+    rings.forEach(({ pos, radius }) => {
+      posOffsets.push(pos);
+      extras.push([radius, random(1), random(1)]);
+    });
+
+    // posOffsets.push([0, 0, 0]);
+    // extras.push([0.5, 0, 0]);
+    // for (let i = 0; i < numRings; i++) {
+    //   posOffsets.push([random(-r, r), random(0, r), random(-r, r)]);
+    //   extras.push([random(0.5, 1.5), random(1), random(1)]);
+    // }
 
     mesh
       .bufferInstance(posOffsets, "aPosOffset")
