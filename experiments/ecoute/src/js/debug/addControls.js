@@ -15,6 +15,7 @@ const addControls = (scene) => {
 
   setTimeout(() => {
     gui.add(oControl, "webgl2").listen();
+    gui.add(scene.globalScale, "value", 1, 5).name("Scale");
     // gui.add(oControl, "save").name("Save Settings");
     gui.add(Settings, "reset").name("Reset Default");
   }, 200);

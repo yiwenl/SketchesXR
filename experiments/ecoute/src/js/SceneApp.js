@@ -15,6 +15,7 @@ import {
 } from "alfrid";
 import Assets from "./Assets";
 import { resize, biasMatrix, saveImage, getDateString } from "./utils";
+import TouchScale from "./utils/TouchScale";
 
 import { isARSupported, setCamera, hitTest } from "./ARUtils";
 import DrawMark from "./DrawMark";
@@ -40,6 +41,7 @@ class SceneApp extends Scene {
     this.orbitalControl.ry.setTo(0.3);
     this.orbitalControl.radius.setTo(1);
     this.orbitalControl.rx.limit(0.0, Math.PI / 2);
+    this.orbitalControl.lock();
 
     // shadow
     this._lightPos = vec3.create();
@@ -57,6 +59,7 @@ class SceneApp extends Scene {
     this._offsetHit = new EaseNumber(0);
     this._hasStarted = false;
     this._needUpdateShadow = true;
+    this.globalScale = new TouchScale();
 
     // set size
     this.resize();
@@ -124,9 +127,15 @@ class SceneApp extends Scene {
       return;
     }
 
+    let s = this.globalScale.value * 0.1;
+    this._container.scaleX = this._container.scaleY = this._container.scaleZ = s;
+
     // update camera position
-    const lightPos = vec3.create();
-    vec3.transformMat4(this._lightTarget, [0, 0, 0], this.mtxHit);
+    s = this.globalScale.value;
+    const mtxLight = mat4.clone(this.mtxHit);
+    mat4.scale(mtxLight, mtxLight, [s, s, s]);
+
+    vec3.transformMat4(this._lightTarget, [0, 0, 0], mtxLight);
     vec3.transformMat4(
       this._lightPos,
       [
@@ -134,9 +143,12 @@ class SceneApp extends Scene {
         LIGHT_HEIGHT * GENERAL_SCALE,
         0.25 * GENERAL_SCALE,
       ],
-      this.mtxHit
+      mtxLight
     );
     this._cameraLight.lookAt(this._lightPos, this._lightTarget);
+
+    const r = 0.5 * GENERAL_SCALE * s;
+    this._cameraLight.ortho(-r, r, r, -r, 0.1 * s, 1 * s);
 
     // update shadow matrix
     mat4.mul(
@@ -189,10 +201,10 @@ class SceneApp extends Scene {
     mat4.mul(this.mtxWorld, this.mtxHit, this._container.matrix);
 
     // debugs
-    // s = 0.01;
-    // this._dBall.draw(this._lightPos, [s, s, s], [1, 1, 0]);
-    // this._dBall.draw(this._lightTarget, [s, s, s], [1, 1, 0]);
-    // this._dCamera.draw(this._cameraLight);
+    s = 0.01;
+    this._dBall.draw(this._lightPos, [s, s, s], [1, 1, 0]);
+    this._dBall.draw(this._lightTarget, [s, s, s], [1, 1, 0]);
+    this._dCamera.draw(this._cameraLight);
 
     GL.setModelMatrix(this.mtxHit);
     s = this._offsetHit.value * 0.005;
