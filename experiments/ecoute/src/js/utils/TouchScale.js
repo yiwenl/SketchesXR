@@ -6,9 +6,9 @@ const getTouchPos = (e, i) => {
 };
 
 class TouchScale {
-  constructor() {
+  constructor(mScale = 1) {
     this._isScaling = false;
-    this._scale = new EaseNumber(1);
+    this._scale = new EaseNumber(mScale);
 
     this._initDistance = 0;
     this._initScale = 1;

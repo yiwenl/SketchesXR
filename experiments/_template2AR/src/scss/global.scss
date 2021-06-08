@@ -137,6 +137,28 @@ video {
   }
 }
 
+.text-no-webgl2 {
+  color: white;
+  font-size: 14px;
+  letter-spacing: 6px;
+  text-align: center;
+  z-index: 99;
+  position: absolute;
+  top: 45%;
+
+  transition: opacity 0.5s ease-in-out;
+  pointer-events: none;
+  opacity: 0;
+
+  .no-webgl2 & {
+    opacity: 1;
+  }
+
+  .hide-messages & {
+    opacity: 0;
+  }
+}
+
 .text-no-support {
   color: white;
   font-size: 14px;
