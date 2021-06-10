@@ -1,3 +1,5 @@
 // Config.js
 
-export default {};
+export default {
+  numParticles: 16,
+};

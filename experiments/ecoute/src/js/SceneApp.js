@@ -11,23 +11,32 @@ import {
   Object3D,
   CameraOrtho,
   EaseNumber,
+  TweenNumber,
   FrameBuffer,
+  FboPingPong,
 } from "alfrid";
+import Config from "./Config";
 import Assets from "./Assets";
 import { resize, biasMatrix, saveImage, getDateString } from "./utils";
 import TouchScale from "./utils/TouchScale";
+import Scheduler from "scheduling";
+import { randomFloor } from "randomutils";
 
 import { isARSupported, setCamera, hitTest } from "./ARUtils";
-import DrawMark from "./DrawMark";
 import { vec3, mat4 } from "gl-matrix";
+import DrawMark from "./DrawMark";
+import DrawSave from "./DrawSave";
+import DrawParticles from "./DrawParticles";
 
 import vs from "shaders/basic.vert";
 import fs from "shaders/diffuse.frag";
+import vsPass from "shaders/pass.vert";
+import fsSim from "shaders/sim.frag";
 import vsFloor from "shaders/basic.vert";
 import fsFloor from "shaders/floor.frag";
 
 const GENERAL_SCALE = 1.0;
-const LIGHT_HEIGHT = 0.7;
+const LIGHT_HEIGHT = 1.0;
 
 let hasSaved = false;
 let canSave = false;
@@ -37,11 +46,10 @@ class SceneApp extends Scene {
     super();
 
     // camera
-    this.orbitalControl.rx.setTo(0.3);
-    this.orbitalControl.ry.setTo(0.3);
     this.orbitalControl.radius.setTo(1);
-    this.orbitalControl.rx.limit(0.0, Math.PI / 2);
-    this.orbitalControl.lock();
+    this.orbitalControl.rx.limit(-0.2, Math.PI / 2);
+    this.orbitalControl.rx.value = -0.2;
+    // this.orbitalControl.lock();
 
     // shadow
     this._lightPos = vec3.create();
@@ -53,25 +61,49 @@ class SceneApp extends Scene {
     // hit
     this.mtxHit = mat4.create();
     this.mtxWorld = mat4.create();
-    mat4.translate(this.mtxHit, this.mtxHit, [0, -0.1, 0]);
+    mat4.translate(this.mtxHit, this.mtxHit, [0, -0.3, 0]);
 
     // states
     this._offsetHit = new EaseNumber(0);
     this._hasStarted = false;
     this._needUpdateShadow = true;
+    this._seed = Math.random() * 0xff;
     this.globalScale = new TouchScale();
+    this.globalScale.lock();
+
+    this._offsetParticles = new TweenNumber(1, "circInOut", 0.01);
+    this._offsetTouch = new EaseNumber(1, 0.2);
 
     // set size
     this.resize();
+
+    this.touch();
+  }
+
+  touch() {
+    this._offsetTouch.setTo(3);
+    this._offsetTouch.value = 1;
+    const delay = randomFloor(1000, 4000);
+
+    setTimeout(() => this.touch(), delay);
   }
 
   present() {
     window.addEventListener("touchstart", (e) => this._onTouch());
+    this.globalScale.lock(false);
   }
 
   _initTextures() {
     const fboSize = GL.isMobile ? 2048 : 4096;
     this._fboShadow = new FrameBuffer(fboSize, fboSize);
+
+    const { numParticles: num } = Config;
+    const oSettings = {
+      type: GL.HALF_FLOAT,
+      minFilter: GL.NEAREST,
+      magFilter: GL.NEAREST,
+    };
+    this._fbo = new FboPingPong(num, num, oSettings, 4);
   }
 
   _initViews() {
@@ -80,6 +112,7 @@ class SceneApp extends Scene {
     this._dAxis = new DrawAxis();
     this._dCamera = new DrawCamera();
     this._dMark = new DrawMark();
+    this._dParticles = new DrawParticles();
 
     const shader = new GLShader(vs, fs);
 
@@ -104,9 +137,20 @@ class SceneApp extends Scene {
     this._container.scaleX = this._container.scaleY = this._container.scaleZ = s;
     this._container.rotationY = -Math.PI / 2;
 
+    // particles
+    new DrawSave()
+      .bindFrameBuffer(this._fbo.read)
+      .setClearColor(0, 0, 0, 1)
+      .draw();
+
+    this._drawSim = new Draw()
+      .setMesh(Geom.bigTriangle())
+      .useProgram(vsPass, fsSim)
+      .setClearColor(0, 0, 0, 1);
+
     setTimeout(() => {
       canSave = true;
-    }, 500);
+    }, 1500);
   }
 
   _onTouch() {
@@ -148,7 +192,7 @@ class SceneApp extends Scene {
     this._cameraLight.lookAt(this._lightPos, this._lightTarget);
 
     const r = 0.5 * GENERAL_SCALE * s;
-    this._cameraLight.ortho(-r, r, r, -r, 0.1 * s, 1 * s);
+    this._cameraLight.ortho(-r, r, r, -r, 0.1 * s, 1.5 * s);
 
     // update shadow matrix
     mat4.mul(
@@ -173,13 +217,40 @@ class SceneApp extends Scene {
 
   _drawStatue() {
     GL.setModelMatrix(this.mtxWorld);
+    const lightPos = vec3.create();
+    vec3.sub(lightPos, this._lightPos, this._lightTarget);
     this._draws.forEach((draw) => {
-      draw.uniform("uLightPos", this._lightPos).draw();
+      draw.uniform("uLightPos", lightPos).draw();
     });
+
+    this._dParticles
+      .bindTexture("uPosMap", this._fbo.read.getTexture(0), 0)
+      .bindTexture("uVelMap", this._fbo.read.getTexture(1), 1)
+      .bindTexture("uExtraMap", this._fbo.read.getTexture(2), 2)
+      .bindTexture("uDataMap", this._fbo.read.getTexture(3), 3)
+      .uniform("uLightPos", lightPos)
+      .draw();
+  }
+
+  _update() {
+    this._drawSim
+      .bindFrameBuffer(this._fbo.write)
+      .uniformTexture("uPosMap", this._fbo.read.getTexture(0), 0)
+      .uniformTexture("uVelMap", this._fbo.read.getTexture(1), 1)
+      .uniformTexture("uExtraMap", this._fbo.read.getTexture(2), 2)
+      .uniformTexture("uDataMap", this._fbo.read.getTexture(3), 3)
+      .uniform("uTime", "float", Scheduler.getElapsedTime() + this._seed)
+      .uniform("uCenterY", 5)
+      .uniform("uOffsetOpen", this._offsetParticles.value)
+      .uniform("uOffsetTouch", this._offsetTouch.value)
+      .draw();
+
+    this._fbo.swap();
   }
 
   render() {
     let s;
+    this._update();
     if (!isARSupported) {
       this._updateShadowMap();
       const g = 0.1;
@@ -204,7 +275,7 @@ class SceneApp extends Scene {
     s = 0.01;
     this._dBall.draw(this._lightPos, [s, s, s], [1, 1, 0]);
     this._dBall.draw(this._lightTarget, [s, s, s], [1, 1, 0]);
-    this._dCamera.draw(this._cameraLight);
+    // this._dCamera.draw(this._cameraLight);
 
     GL.setModelMatrix(this.mtxHit);
     s = this._offsetHit.value * 0.005;
@@ -219,6 +290,12 @@ class SceneApp extends Scene {
       .draw();
 
     this._drawStatue();
+
+    s = 400;
+    // GL.viewport(0, 0, s, s);
+    // this._dCopy.draw(this._fbo.read.getTexture(0));
+    // GL.viewport(s, 0, s, s);
+    // this._dCopy.draw(this._fbo.read.getTexture(2));
 
     if (!hasSaved && canSave && !GL.isMobile) {
       saveImage(GL.canvas, getDateString());

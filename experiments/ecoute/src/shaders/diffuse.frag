@@ -15,6 +15,7 @@ out vec4 oColor;
 
 #pragma glslify: diffuse    = require(glsl-utils/diffuse.glsl)
 
+
 void main(void) {
 
     vec3 colorNormal = texture(uNormalMap, vTextureCoord).rgb - 0.5;
@@ -22,4 +23,5 @@ void main(void) {
 
     float g = diffuse(n, uLightPos, .5);
     oColor = vec4(vec3(g), 1.0);
+    // oColor = vec4(vNormalOrg, 1.0);
 }

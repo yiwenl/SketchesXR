@@ -12,10 +12,15 @@ class TouchScale {
 
     this._initDistance = 0;
     this._initScale = 1;
+    this._isLocked = false;
 
     window.addEventListener("touchstart", (e) => this._onTouchStart(e));
     window.addEventListener("touchend", (e) => this._onTouchStart(e));
     window.addEventListener("touchmove", (e) => this._onTouchMove(e));
+  }
+
+  lock(mLock = true) {
+    this._isLocked = mLock;
   }
 
   _onTouchStart(e) {
