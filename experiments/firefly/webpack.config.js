@@ -59,15 +59,11 @@ module.exports = {
         ],
       },
       {
-        test: /\.css$/,
-        use: [MiniCssExtractPlugin.loader, "css-loader"],
-      },
-      {
-        test: /\.scss$/,
+        test: /\.(sa|sc|c)ss$/,
         use: [
-          "style-loader", // creates style nodes from JS strings
-          "css-loader", // translates CSS into CommonJS
-          "sass-loader", // compiles Sass to CSS, using Node Sass by default
+          isProd ? MiniCssExtractPlugin.loader : "style-loader",
+          "css-loader?url=false",
+          "sass-loader",
         ],
       },
       {
@@ -78,8 +74,7 @@ module.exports = {
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: "[name].css",
-      chunkFilename: "[id].css",
+      filename: "assets/css/main.css",
     }),
     // new BundleAnalyzerPlugin()
   ],

@@ -1,7 +1,7 @@
 // Config.js
 
 export default {
-  numParticles: 64,
+  numParticles: 50,
   envSize: 20,
   numTrees: 20,
   autoSave: false,

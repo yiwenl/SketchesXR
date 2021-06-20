@@ -49,7 +49,7 @@ function _init3D() {
 
   scene = new SceneApp();
 
-  if (process.env.NODE_ENV === "development") {
+  if (process.env.NODE_ENV === "development" && window.gui) {
     addControls(scene);
   }
 
