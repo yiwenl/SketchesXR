@@ -60,6 +60,7 @@ class SceneApp extends Scene {
     this.globalScale = new TouchScale();
     this._hasStarted = false;
     this._hasPresented = false;
+    this._particleScale = 0.4;
 
     // shadow
     this._lightPos = vec3.create();
@@ -88,6 +89,7 @@ class SceneApp extends Scene {
   }
 
   present() {
+    this._particleScale = 1.0;
     this._offsetOpen.setTo(0);
     window.addEventListener("touchstart", (e) => this._onTouch());
     this._hasPresented = true;
@@ -241,6 +243,8 @@ class SceneApp extends Scene {
       .bindTexture("uMoonMap", this._fboMoon.texture, 5)
       .bindTexture("uPosOrgMap", this._fboOrgPos.texture, 6)
       .uniform("uTime", Scheduler.getDeltaTime())
+      .uniform("uCenter", [0, DEFAULT_Y, 0])
+      .uniform("uRadius", Config.moonRadius)
       .draw();
 
     this._fbo.swap();
@@ -262,14 +266,14 @@ class SceneApp extends Scene {
     }
 
     // debug
-    s = 0.005;
-    this._dBall.draw(this._lightPos, [s, s, s], [1, 0.8, 0]);
-    this._dBall.draw(this._lightTarget, [s, s, s], [1, 0.8, 0]);
-    this._dCamera.draw(this._cameraLight);
+    // s = 0.005;
+    // this._dBall.draw(this._lightPos, [s, s, s], [1, 0.8, 0]);
+    // this._dBall.draw(this._lightTarget, [s, s, s], [1, 0.8, 0]);
+    // this._dCamera.draw(this._cameraLight);
 
     GL.setModelMatrix(this._mtxHit);
     s = this._offsetHit.value * 0.005;
-    this._dAxis.draw();
+    // this._dAxis.draw();
     this._dBall.draw([0, 0, 0], [s, s, s], [1, 1, 1]);
     this._drawMark.uniform("uOffset", this._offsetHit.value).draw();
 
@@ -282,28 +286,17 @@ class SceneApp extends Scene {
 
     this._drawParticles
       .uniform("uViewport", [GL.width, GL.height])
+      .uniform("uParticleScale", this._particleScale)
       .bindTexture("uPosMap", this._fbo.read.getTexture(0), 0)
-      .bindTexture("uColorMap", this._fbo.read.getTexture(4), 4)
+      .bindTexture("uDataMap", this._fbo.read.getTexture(2), 1)
+      .bindTexture("uColorMap", this._fbo.read.getTexture(4), 2)
       .draw();
 
     const mtx = mat4.create();
-    s = 0.95;
+    s = 0.995;
     mat4.scale(mtx, this._mtxWorld, [s, s, s]);
     GL.setModelMatrix(mtx);
-    // this._drawScene();
     this._drawMoon.draw();
-
-    // this._dCopy.draw(this._fboMoon.texture);
-
-    // debug
-    // GL.disable(GL.DEPTH_TEST);
-    s = 128;
-    GL.viewport(0, 0, s, s);
-    this._dCopy.draw(this._fbo.read.getTexture(0));
-    GL.viewport(s, 0, s, s);
-    this._dCopy.draw(this._fbo.read.getTexture(2));
-    GL.viewport(s * 2, 0, s, s);
-    this._dCopy.draw(this._fboMoon.texture);
 
     if (canSave && !hasSaved && Config.autoSave) {
       saveImage(GL.canvas, getDateString());

@@ -16,6 +16,8 @@ uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
 
 uniform float uTime;
+uniform vec3 uCenter;
+uniform float uRadius;
 
 
 layout (location = 0) out vec4 oColor0;
@@ -56,17 +58,23 @@ void main(void) {
     acc.y -= 1.0;
 
     // noise
-    vec3 noise = curlNoise(pos * 2.0 + uTime * 0.1);
+    vec3 noise = curlNoise(pos * 4.0 + uTime);
+    noise.y = noise.y * .5 + .5;
     acc += noise * 0.25;
 
     // rotate
     vec3 dir = normalize(vec3(pos.x, 0.0, pos.z));
     dir.xz = rotate(dir.xz, PI * 0.8);
-    acc += dir * 0.6 * smoothstep(0.1, 0.3, pos.y);
+    acc += dir * 0.8 * smoothstep(0.1, 0.3, pos.y);
+
+    // pulling
+    dir = normalize(uCenter - pos);
+    acc += dir * 0.3;
 
 
     float speedOffset = mix(1.0, 2.0, extra.x);
-    vel += acc * speedOffset * 0.00005;
+    float initSpeed = smoothstep(1.0, 0.8, life);
+    vel += acc * speedOffset * 0.00002 * initSpeed;
 
 
     pos += vel;
@@ -85,9 +93,11 @@ void main(void) {
         data.z = 0.0;
     }
 
+    if(distance(pos, uCenter) < uRadius) {
+        pos = normalize(pos - uCenter) * uRadius + uCenter;
+    }
 
-
-    if(life <= 0.0 || data.z > 90.0) {
+    if(life <= 0.0) {
         life = 1.0;
         pos = posOrg;
         needUpdateColor = 1.0;

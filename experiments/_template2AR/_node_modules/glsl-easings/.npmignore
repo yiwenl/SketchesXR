@@ -1,6 +1,0 @@
-test.*
-test
-.gitignore
-.DS_Store
-npm-debug.log
-bundle.js

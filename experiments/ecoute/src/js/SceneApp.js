@@ -298,7 +298,7 @@ class SceneApp extends Scene {
     // this._dCopy.draw(this._fbo.read.getTexture(2));
 
     if (!hasSaved && canSave && !GL.isMobile) {
-      saveImage(GL.canvas, getDateString());
+      // saveImage(GL.canvas, getDateString());
       hasSaved = true;
     }
   }
