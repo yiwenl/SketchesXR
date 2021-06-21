@@ -5,9 +5,12 @@ import {
   Geom,
   Object3D,
   DrawBall,
+  DrawCamera,
   DrawCopy,
   EaseNumber,
   FboPingPong,
+  CameraOrtho,
+  FrameBuffer,
 } from "alfrid";
 import { resize, iOS } from "./utils";
 import Scheduler from "scheduling";
@@ -16,6 +19,7 @@ import Config from "./Config";
 import { isARSupported, setCamera, hitTest } from "./ARUtils";
 import { mat4 } from "gl-matrix";
 import TouchScale from "./utils/TouchScale";
+import BlurPass from "./BlurPass";
 
 // draw calls
 import DrawMark from "./DrawMark";
@@ -46,11 +50,18 @@ class SceneApp extends Scene {
     this._globalScale = new TouchScale(0.5, 0.1);
     this._seed = Math.random() * 0xffff;
 
+    // light map
+    this._cameraLight = new CameraOrtho();
+    const { envSize } = Config;
+    const r = envSize / 2;
+    this._cameraLight.ortho(-r, r, r, -r, 1, 10);
+    this._cameraLight.lookAt([0, 5, 0], [0, 0, 0], [0, 0, -1]);
+
     // states
     this._offsetHit = new EaseNumber(0);
     this._offsetOpen = new EaseNumber(1);
     this._hasStarted = false;
-    this._particleScale = 1;
+    this._particleScale = 2;
     this._hasPresented = false;
 
     // set size
@@ -74,12 +85,21 @@ class SceneApp extends Scene {
       magFilter: GL.NEAREST,
     };
     this._fbo = new FboPingPong(num, num, oSettings, 4);
+
+    const fboSize = 1024;
+    this._fboLight = new FrameBuffer(fboSize, fboSize, {
+      minFilter: GL.LINEAR,
+      magFilter: GL.LINEAR,
+    });
   }
 
   _initViews() {
     this._dCopy = new DrawCopy();
     this._dBall = new DrawBall();
+    this._dCamera = new DrawCamera();
     this._dMark = new DrawMark();
+
+    this._blurPass = new BlurPass(256);
 
     this._drawFloor = new DrawFloor();
 
@@ -137,6 +157,34 @@ class SceneApp extends Scene {
       .draw();
 
     this._fbo.swap();
+
+    // update light map
+
+    GL.setMatrices(this._cameraLight);
+
+    this._fboLight.bind();
+    GL.clear(0, 0, 0, 1);
+    this._renderParticles(true);
+    this._fboLight.unbind();
+    GL.setMatrices(this.camera);
+
+    this._blurPass.update(this._fboLight.texture);
+  }
+
+  _renderParticles(mLight) {
+    mLight && GL.enableAdditiveBlending();
+    GL.disable(GL.DEPTH_TEST);
+    const particleScale = this._containerWorld.scaleX * this._particleScale;
+    this._drawRender
+      .bindTexture("uPosMap", this._fbo.read.getTexture(0), 0)
+      .bindTexture("uDataMap", this._fbo.read.getTexture(3), 3)
+      .uniform("uViewport", [GL.width, GL.height])
+      .uniform("uParticleScale", particleScale)
+      .uniform("uLightMap", mLight ? 1.0 : 0.0)
+      .draw();
+    GL.enable(GL.DEPTH_TEST);
+
+    mLight && GL.enableAlphaBlending();
   }
 
   render() {
@@ -163,17 +211,19 @@ class SceneApp extends Scene {
     mat4.mul(mtx, this.mtxHit, this._containerWorld.matrix);
     GL.setModelMatrix(mtx);
 
-    !this._hasPresented && this._drawFloor.draw();
+    // GL.enableAdditiveBlending();
+    this._drawFloor.bindTexture("uLightMap", this._blurPass.texture, 0).draw();
+    // GL.enableAlphaBlending();
 
-    GL.disable(GL.DEPTH_TEST);
-    const particleScale = this._containerWorld.scaleX * this._particleScale;
-    this._drawRender
-      .bindTexture("uPosMap", this._fbo.read.getTexture(0), 0)
-      .bindTexture("uDataMap", this._fbo.read.getTexture(3), 3)
-      .uniform("uViewport", [GL.width, GL.height])
-      .uniform("uParticleScale", particleScale)
-      .draw();
-    GL.enable(GL.DEPTH_TEST);
+    this._renderParticles(false);
+
+    if (!Config.debug) return;
+
+    s = 400;
+    GL.viewport(0, 0, s, s);
+    this._dCopy.draw(this._fboLight.texture);
+    GL.viewport(s, 0, s, s);
+    this._dCopy.draw(this._blurPass.texture);
   }
 
   resize() {

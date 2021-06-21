@@ -2,6 +2,7 @@
 
 precision highp float;
 in vec3 vColor;
+uniform float uLightMap;
 out vec4 oColor;
 
 void main(void) {
@@ -10,6 +11,9 @@ void main(void) {
     if(a <= 0.00001) {
         discard;
     }
+
+    float t = mix(1.0, 5.0, uLightMap);
+    a = pow(a, t);
     
     oColor = vec4(vColor, a);
 }

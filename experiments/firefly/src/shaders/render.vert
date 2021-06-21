@@ -11,6 +11,7 @@ uniform sampler2D uPosMap;
 uniform sampler2D uDataMap;
 uniform vec2 uViewport;
 uniform float uParticleScale;
+uniform float uLightMap;
 
 out vec3 vColor;
 
@@ -27,6 +28,9 @@ void main(void) {
     gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(pos, 1.0);
 
     gl_PointSize = particleSize(gl_Position, uProjectionMatrix, uViewport, radius) * mix(1.0, 2.0, aVertexPosition.z) * uParticleScale;
+    if(uLightMap > 0.5) {
+        gl_PointSize = 40.0;
+    }
 
     vec3 data = texture(uDataMap, aVertexPosition.xy).rgb;
     float cycle = data.x;
@@ -35,7 +39,12 @@ void main(void) {
     g = smoothstep(0.7, 0.2, g);
     g = sin(g * PI * 0.5);
 
-    g = mix(g, 1.0, .3);
+    if(uLightMap < 0.5) {
+        g = mix(g, 1.0, .3);
+    }
 
     vColor = vec3(g) * YELLOW * 1.2;
+    if(uLightMap > 0.5) {
+        vColor = vec3(g * 0.015);
+    }
 }

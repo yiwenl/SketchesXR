@@ -4,12 +4,13 @@
 
 precision highp float;
 varying vec2 vTextureCoord;
-uniform sampler2D texture;
+uniform sampler2D uLightMap;
 
 #define DARK_BLUE vec3(16.0, 19.0, 46.0)/255.0 * 0.5
 
 void main(void) {
-    // gl_FragColor = vec4(vTextureCoord, 0.0, 1.0);
-    gl_FragColor = vec4(vec3(0.1), 1.0);
-    // gl_FragColor = vec4(DARK_BLUE, 1.0);
+    vec2 uv = vTextureCoord;
+    float a = texture2D(uLightMap, uv).r;
+    // gl_FragColor.rgb *= 0.25;
+    gl_FragColor = vec4(vec3(1.0), a * 0.25);
 }
