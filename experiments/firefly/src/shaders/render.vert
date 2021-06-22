@@ -23,10 +23,6 @@ const float radius = 0.02;
 
 #define PI 3.141592653
 
-// #define YELLOW vec3(1.0)
-// #define YELLOW vec3(202.0, 187.0, 55.0)/255.0
-#define YELLOW vec3(233.0, 218.0, 86.0)/255.0
-
 void main(void) {
     vec3 pos = texture(uPosMap, aVertexPosition.xy).xyz;
     gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(pos, 1.0);
@@ -57,9 +53,11 @@ void main(void) {
     vec3 color = texture(uColorMap, data.yz).rgb * 1.2;
 
     // vColor = vec3(g) * YELLOW * 1.2 * t;
-    vColor = color * t * g;
+    vColor = color * t;
 
     if(uLightMap > 0.5) {
-        vColor = vec3(g * 0.015) * t;
+        vColor = vec3(0.015 * t);
     }
+
+    vLight = g;
 }

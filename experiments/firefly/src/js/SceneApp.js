@@ -109,8 +109,8 @@ class SceneApp extends Scene {
 
     this._drawFloor = new DrawFloor();
 
-    const bgColor = [19, 23, 47].map((v) => v / 255);
-    // const bgColor = [24, 37, 100].map((v) => v / 255);
+    const bgColor = [19, 23, 47].map((v) => (v / 255) * 0.5);
+    // const bgColor = [24, 37, 100].map((v) => (v / 255) * 0.5);
     this._drawCover = new Draw()
       .setMesh(Geom.bigTriangle())
       .useProgram(vsPass, fsCover)
