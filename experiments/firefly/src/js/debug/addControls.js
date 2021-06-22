@@ -19,6 +19,7 @@ const addControls = (scene) => {
       .add(Config, "numParticles", [16, 32, 50, 64, 128])
       .onFinishChange(Settings.reload);
 
+    gui.add(scene, "toggle");
     // gui.add(ARUtils, "isARSupported").listen();
     // gui.add(oControl, "webgl2").listen();
     gui.add(Config, "debug").onFinishChange(Settings.refresh);

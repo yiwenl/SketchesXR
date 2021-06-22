@@ -14,10 +14,10 @@ class DrawRender extends Draw {
     const positions = [];
     const indices = [];
     let count = 0;
-
+    const offset = 0.5 / num;
     for (let i = 0; i < num; i++) {
       for (let j = 0; j < num; j++) {
-        positions.push([i / num, j / num, Math.random()]);
+        positions.push([i / num + offset, j / num + offset, Math.random()]);
         indices.push(count);
         count++;
       }

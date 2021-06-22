@@ -8,6 +8,7 @@ import {
   DrawCamera,
   DrawCopy,
   EaseNumber,
+  TweenNumber,
   FboPingPong,
   CameraOrtho,
   FrameBuffer,
@@ -15,6 +16,7 @@ import {
 import { resize, iOS } from "./utils";
 import Scheduler from "scheduling";
 
+import Assets from "./Assets";
 import Config from "./Config";
 import { isARSupported, setCamera, hitTest } from "./ARUtils";
 import { mat4 } from "gl-matrix";
@@ -59,7 +61,7 @@ class SceneApp extends Scene {
 
     // states
     this._offsetHit = new EaseNumber(0);
-    this._offsetOpen = new EaseNumber(1);
+    this._offsetOpen = new TweenNumber(1, "circularIn", 0.01);
     this._hasStarted = false;
     this._particleScale = 2;
     this._hasPresented = false;
@@ -68,10 +70,14 @@ class SceneApp extends Scene {
     this.resize();
   }
 
+  toggle() {
+    this._offsetOpen.value = this._offsetOpen.targetValue === 1 ? 0 : 1;
+  }
+
   present() {
     window.addEventListener("touchstart", (e) => this._onTouch());
 
-    this._particleScale = 1.5;
+    this._particleScale = 2.5;
     this._offsetOpen.setTo(0);
     this._hasPresented = true;
   }
@@ -103,10 +109,12 @@ class SceneApp extends Scene {
 
     this._drawFloor = new DrawFloor();
 
+    const bgColor = [19, 23, 47].map((v) => v / 255);
+    // const bgColor = [24, 37, 100].map((v) => v / 255);
     this._drawCover = new Draw()
       .setMesh(Geom.bigTriangle())
       .useProgram(vsPass, fsCover)
-      .uniform("uColor", [0, 0, 0.05])
+      .uniform("uColor", bgColor)
       .uniform("uOpacity", 0.9);
 
     this._drawRender = new DrawRender();
@@ -177,10 +185,12 @@ class SceneApp extends Scene {
     const particleScale = this._containerWorld.scaleX * this._particleScale;
     this._drawRender
       .bindTexture("uPosMap", this._fbo.read.getTexture(0), 0)
-      .bindTexture("uDataMap", this._fbo.read.getTexture(3), 3)
+      .bindTexture("uDataMap", this._fbo.read.getTexture(3), 1)
+      .bindTexture("uColorMap", Assets.get("gold"), 2)
       .uniform("uViewport", [GL.width, GL.height])
       .uniform("uParticleScale", particleScale)
       .uniform("uLightMap", mLight ? 1.0 : 0.0)
+      .uniform("uOffset", this._offsetOpen.value)
       .draw();
     GL.enable(GL.DEPTH_TEST);
 
@@ -191,7 +201,7 @@ class SceneApp extends Scene {
     this.update();
     let s;
     if (!isARSupported) {
-      const g = 0.9;
+      const g = 0.1;
       GL.clear(g, g, g, 1);
     } else {
       setCamera(GL, this.camera);
