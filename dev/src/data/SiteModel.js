@@ -23,6 +23,12 @@ const ExpModel = [
     url: "//yiwenl.github.io/SketchesXR/experiments/zongzi/dist/index.html",
     title: "Zong",
   },
+  {
+    cover: "assets/img/coverFirefly.jpg",
+    video: "assets/img/firefly.gif",
+    url: "//yiwenl.github.io/SketchesXR/experiments/firefly/dist/index.html",
+    title: "Fireflies",
+  },
 ];
 
 module.exports = ExpModel;
