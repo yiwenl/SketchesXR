@@ -28,7 +28,6 @@ function Home() {
       </Link>
       <div className="Experiment-List">
         {projectList.map(({ title, cover, video }, i) => {
-          console.log("video", video);
           return (
             <Link to={`/exps/${projectList.length - i}`} key={`project${i}`}>
               <div className="Experiment-Item">
