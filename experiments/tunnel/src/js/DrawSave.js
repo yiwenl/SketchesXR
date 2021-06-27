@@ -22,7 +22,7 @@ class DrawSave extends Draw {
     const getPos = () => {
       const r = randomGaussian() * 0.2 + 0.02;
       const a = random(Math.PI * 2);
-      const tz = 0.02;
+      const tz = 0.01;
       const z = randomGaussian() * tz - tz * 0.5;
 
       return [Math.cos(a) * r, Math.sin(a) * r, z];

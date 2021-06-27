@@ -1,7 +1,8 @@
 // Config.js
 
 export default {
-  numRings: 10,
+  colorIndex: 8,
+  numRings: 40,
   numParticles: 128,
   autoSave: false,
 };
