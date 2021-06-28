@@ -13,7 +13,7 @@ import {
   CameraOrtho,
   FrameBuffer,
 } from "alfrid";
-import { resize, iOS } from "./utils";
+import { resize, iOS, saveImage, getDateString } from "./utils";
 import Scheduler from "scheduling";
 
 import Assets from "./Assets";
@@ -28,20 +28,24 @@ import DrawMark from "./DrawMark";
 import DrawSave from "./DrawSave";
 import DrawFloor from "./DrawFloor";
 import DrawRender from "./DrawRender";
+import Subscene from "./Subscene";
 
 // shaders
 import vsPass from "shaders/pass.vert";
 import fsSim from "shaders/sim.frag";
 import fsCover from "shaders/color.frag";
 
-const DEFAULT_Y = 0.2;
+const DEFAULT_Y = 1.5;
+
+let hasSaved = false;
+let canSave = false;
 
 class SceneApp extends Scene {
   constructor() {
     super();
 
     // camera
-    this.orbitalControl.rx.setTo(0.8);
+    // this.orbitalControl.rx.setTo(0.8);
     this.orbitalControl.ry.setTo(0.3);
     this.orbitalControl.radius.setTo(10);
 
@@ -51,6 +55,7 @@ class SceneApp extends Scene {
     this._containerWorld = new Object3D();
     this._globalScale = new TouchScale(0.5, 0.1);
     this._seed = Math.random() * 0xffff;
+    this._containerWorld.addChild(this._subScene);
 
     // light map
     this._cameraLight = new CameraOrtho();
@@ -68,6 +73,12 @@ class SceneApp extends Scene {
 
     // set size
     this.resize();
+
+    if (!GL.isMobile) {
+      setTimeout(() => {
+        canSave = true;
+      }, 500);
+    }
   }
 
   toggle() {
@@ -129,6 +140,8 @@ class SceneApp extends Scene {
       .setClearColor(0, 0, 0, 1)
       .uniform("uNum", "int", parseInt(Config.numParticles))
       .uniform("uMaxRadius", "float", Config.envSize);
+
+    this._subScene = new Subscene();
   }
 
   _onTouch() {
@@ -181,7 +194,7 @@ class SceneApp extends Scene {
 
   _renderParticles(mLight) {
     mLight && GL.enableAdditiveBlending();
-    GL.disable(GL.DEPTH_TEST);
+    // GL.disable(GL.DEPTH_TEST);
     const particleScale = this._containerWorld.scaleX * this._particleScale;
     this._drawRender
       .bindTexture("uPosMap", this._fbo.read.getTexture(0), 0)
@@ -192,7 +205,7 @@ class SceneApp extends Scene {
       .uniform("uLightMap", mLight ? 1.0 : 0.0)
       .uniform("uOffset", this._offsetOpen.value)
       .draw();
-    GL.enable(GL.DEPTH_TEST);
+    // GL.enable(GL.DEPTH_TEST);
 
     mLight && GL.enableAlphaBlending();
   }
@@ -227,22 +240,32 @@ class SceneApp extends Scene {
 
     this._renderParticles(false);
 
-    if (!Config.debug) return;
+    // render subscene
+    if (!this._hasPresented) {
+      this._subScene.render(this.mtxHit);
+    }
 
-    s = 400;
-    GL.viewport(0, 0, s, s);
-    this._dCopy.draw(this._fboLight.texture);
-    GL.viewport(s, 0, s, s);
-    this._dCopy.draw(this._blurPass.texture);
+    if (Config.debug) {
+      s = 400;
+      GL.viewport(0, 0, s, s);
+      this._dCopy.draw(this._fboLight.texture);
+      GL.viewport(s, 0, s, s);
+      this._dCopy.draw(this._blurPass.texture);
+    }
+
+    if (canSave && !hasSaved && Config.autoSave) {
+      saveImage(GL.canvas, getDateString());
+      hasSaved = true;
+    }
   }
 
   resize() {
+    const pixelRatio = GL.isMobiel ? 1 : 1.5;
     if (GL.isMobile || !Config.autoSave) {
       const { innerWidth, innerHeight } = window;
       resize(innerWidth, innerHeight);
       this.camera.setAspectRatio(GL.aspectRatio);
     } else {
-      const pixelRatio = 2.0;
       resize(1080 * pixelRatio, 1350 * pixelRatio);
       this.camera.setAspectRatio(GL.aspectRatio);
     }

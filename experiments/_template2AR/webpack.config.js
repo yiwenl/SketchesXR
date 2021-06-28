@@ -20,7 +20,7 @@ const output = isProd
       path: pathOutput,
     };
 
-const devtool = isProd ? "source-map" : "inline-source-map";
+const devtool = isProd ? "" : "inline-source-map";
 
 module.exports = {
   entry,

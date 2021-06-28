@@ -20,10 +20,11 @@ const addControls = (scene) => {
       .onFinishChange(Settings.reload);
 
     gui.add(scene, "toggle");
+    gui.addColor(Config, "treeColor").onFinishChange(Settings.refresh);
     // gui.add(ARUtils, "isARSupported").listen();
     // gui.add(oControl, "webgl2").listen();
     gui.add(Config, "debug").onFinishChange(Settings.refresh);
-    // gui.add(Config, "autoSave").onFinishChange(Settings.refresh);
+    gui.add(Config, "autoSave").onFinishChange(Settings.refresh);
     // gui.add(oControl, "save").name("Save Settings");
     gui.add(Settings, "reset").name("Reset Default");
   }, 200);
