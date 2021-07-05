@@ -14,6 +14,7 @@ uniform mat4 uProjectionMatrix;
 out vec2 vTextureCoord;
 out vec3 vNormal;
 out vec3 vPosition;
+out vec4 vScreenPos;
 
 #define generalScale 0.41
 #define PI 3.141592653
@@ -38,7 +39,8 @@ void main(void) {
     vec4 wsPos = uModelMatrix * vec4(pos, 1.0);
     vPosition = wsPos.xyz / wsPos.w;
 
-    gl_Position = uProjectionMatrix * uViewMatrix * wsPos;
+    vScreenPos = uProjectionMatrix * uViewMatrix * wsPos;
+    gl_Position = vScreenPos;
     vTextureCoord = aTextureCoord;
 
     vec3 N = aNormal;

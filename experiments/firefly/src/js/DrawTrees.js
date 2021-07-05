@@ -5,6 +5,7 @@ import Config from "./Config";
 import { random } from "randomutils";
 import vs from "shaders/trees.vert";
 import fs from "shaders/trees.frag";
+// import fs from "shaders/depth.frag";
 
 class DrawTrees extends Draw {
   constructor() {
@@ -37,11 +38,14 @@ class DrawTrees extends Draw {
       return t;
     };
 
+    const bgColor = [19, 23, 47].map((v) => (v / 255) * 0.5);
+
     this.setMesh(meshes)
       .useProgram(vs, fs)
       .bindTexture("uColorMap", getAsset("tree_color"), 0)
       .bindTexture("uNormalMap", getAsset("tree_normal"), 1)
-      .bindTexture("uAoMap", getAsset("tree_ao"), 2);
+      .bindTexture("uAoMap", getAsset("tree_ao"), 2)
+      .uniform("uBgColor", bgColor);
   }
 }
 

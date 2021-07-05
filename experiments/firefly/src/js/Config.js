@@ -7,4 +7,6 @@ export default {
   numTrees: 20,
   autoSave: false,
   debug: false,
+  near:1,
+  far:50
 };

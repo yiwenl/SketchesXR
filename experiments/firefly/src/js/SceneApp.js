@@ -67,9 +67,13 @@ class SceneApp extends Scene {
     // states
     this._offsetHit = new EaseNumber(0);
     this._offsetOpen = new TweenNumber(1, "circularIn", 0.01);
+    this._offsetCover = new EaseNumber(1, 0.05);
     this._hasStarted = false;
     this._particleScale = 2;
     this._hasPresented = false;
+
+    // set camera
+    this.updateCamera();
 
     // set size
     this.resize();
@@ -81,6 +85,11 @@ class SceneApp extends Scene {
     }
   }
 
+  updateCamera() {
+    const { near, far } = Config;
+    this.camera.setPerspective(this.camera._fov, GL.aspectRatio, near, far);
+  }
+
   toggle() {
     this._offsetOpen.value = this._offsetOpen.targetValue === 1 ? 0 : 1;
   }
@@ -90,6 +99,7 @@ class SceneApp extends Scene {
 
     this._particleScale = 2.5;
     this._offsetOpen.setTo(0);
+    this._offsetCover.setTo(0);
     this._hasPresented = true;
   }
 
@@ -120,12 +130,12 @@ class SceneApp extends Scene {
 
     this._drawFloor = new DrawFloor();
 
-    const bgColor = [19, 23, 47].map((v) => (v / 255) * 0.5);
+    this.bgColor = [19, 23, 47].map((v) => (v / 255) * 0.5);
     // const bgColor = [24, 37, 100].map((v) => (v / 255) * 0.5);
     this._drawCover = new Draw()
       .setMesh(Geom.bigTriangle())
       .useProgram(vsPass, fsCover)
-      .uniform("uColor", bgColor)
+      .uniform("uColor", this.bgColor)
       .uniform("uOpacity", 0.9);
 
     this._drawRender = new DrawRender();
@@ -151,7 +161,10 @@ class SceneApp extends Scene {
       mat4.copy(this.mtxHit, mtxHit);
       this._hasStarted = true;
       this._offsetHit.value = 0.0;
-      this._offsetOpen.value = 1;
+      setTimeout(() => {
+        this._offsetOpen.value = 1;
+      }, 500);
+      this._offsetCover.value = 1;
     }
   }
 
@@ -194,7 +207,7 @@ class SceneApp extends Scene {
 
   _renderParticles(mLight) {
     mLight && GL.enableAdditiveBlending();
-    // GL.disable(GL.DEPTH_TEST);
+    this._hasPresented && GL.disable(GL.DEPTH_TEST);
     const particleScale = this._containerWorld.scaleX * this._particleScale;
     this._drawRender
       .bindTexture("uPosMap", this._fbo.read.getTexture(0), 0)
@@ -204,8 +217,9 @@ class SceneApp extends Scene {
       .uniform("uParticleScale", particleScale)
       .uniform("uLightMap", mLight ? 1.0 : 0.0)
       .uniform("uOffset", this._offsetOpen.value)
+      .uniform("uPresented", this._hasPresented ? 1 : 0)
       .draw();
-    // GL.enable(GL.DEPTH_TEST);
+    this._hasPresented && GL.enable(GL.DEPTH_TEST);
 
     mLight && GL.enableAlphaBlending();
   }
@@ -214,7 +228,7 @@ class SceneApp extends Scene {
     this.update();
     let s;
     if (!isARSupported) {
-      const g = 0.1;
+      const g = 0;
       GL.clear(g, g, g, 1);
     } else {
       setCamera(GL, this.camera);
@@ -222,7 +236,7 @@ class SceneApp extends Scene {
     }
 
     GL.disable(GL.DEPTH_TEST);
-    this._drawCover.draw();
+    this._drawCover.uniform("uOpacity", this._offsetCover.value * 0.9).draw();
     GL.enable(GL.DEPTH_TEST);
 
     GL.setModelMatrix(this.mtxHit);
@@ -238,12 +252,11 @@ class SceneApp extends Scene {
     this._drawFloor.bindTexture("uLightMap", this._blurPass.texture, 0).draw();
     // GL.enableAlphaBlending();
 
-    this._renderParticles(false);
-
     // render subscene
     if (!this._hasPresented) {
       this._subScene.render(this.mtxHit);
     }
+    this._renderParticles(false);
 
     if (Config.debug) {
       s = 400;

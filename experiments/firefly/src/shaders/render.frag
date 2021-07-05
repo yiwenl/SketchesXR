@@ -4,6 +4,7 @@ precision highp float;
 in vec3 vColor;
 in float vLight;
 uniform float uLightMap;
+uniform float uPresented;
 out vec4 oColor;
 
 void main(void) {

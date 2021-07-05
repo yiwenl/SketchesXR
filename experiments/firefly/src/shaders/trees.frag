@@ -4,11 +4,14 @@ precision highp float;
 in vec2 vTextureCoord;
 in vec3 vNormal;
 in vec3 vPosition;
+in vec4 vScreenPos;
 
 uniform sampler2D uColorMap;
 uniform sampler2D uNormalMap;
 uniform sampler2D uAoMap;
 uniform vec3 uTreeColor;
+uniform vec3 uBgColor;
+uniform mat3 uNormalMatrix;
 
 #define uNormalScale 0.5
 
@@ -39,17 +42,44 @@ vec3 getNormal() {
 	return n;
 }
 
+float fogFactorExp2(
+  const float dist,
+  const float density
+) {
+  const float LOG2 = -1.442695;
+  float d = density * dist;
+  return 1.0 - clamp(exp2(d * d * LOG2), 0.0, 1.0);
+}
+
+float fogFactorExp(
+  const float dist,
+  const float density
+) {
+  return 1.0 - clamp(exp(-density * dist), 0.0, 1.0);
+}
+
+
 void main(void) {
-    // vec3 normal = texture(uNormalMap, vTextureCoord).rgb;
-    vec3 normal = getNormal();;
-    float ao = texture(uAoMap, vTextureCoord).r;
-    ao = mix(ao, 1.0, .5);
-    vec4 color = texture(uColorMap, vTextureCoord);
-    color.rgb *= uTreeColor;
-    color.rgb *= ao;
+	// vec3 normal = texture(uNormalMap, vTextureCoord).rgb;
+	vec3 normal = getNormal();;
+	float ao = texture(uAoMap, vTextureCoord).r;
+	ao = mix(ao, 1.0, .5);
+	vec4 color = texture(uColorMap, vTextureCoord);
+	color.rgb *= uTreeColor;
+	color.rgb *= ao;
 
-    float d = diffuse(LIGHT, normal, .5);
-    color.rgb *= d;
+	float d = diffuse(LIGHT, uNormalMatrix * normal, .95);
+	d = pow(d, 25.0);
+	color.rgb *= d;
 
-    oColor = color;
+	float z = vScreenPos.z / vScreenPos.w;
+	z = 1.0 - pow(z, 5.0);
+
+	// float fogAmount = fogFactorExp(vScreenPos.z / vScreenPos.w, 2.0);
+	float fogAmount = fogFactorExp2(gl_FragCoord.z - 0.2, 2.0);
+
+	vec3 bgColor = mix(uBgColor, vec3(0.0), .1);
+
+	color.rgb = mix(color.rgb, bgColor, fogAmount);
+	oColor = color;
 }

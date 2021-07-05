@@ -21,6 +21,13 @@ const addControls = (scene) => {
 
     gui.add(scene, "toggle");
     gui.addColor(Config, "treeColor").onFinishChange(Settings.refresh);
+
+    const cameraChange = () => {
+      scene.updateCamera();
+      Settings.refresh();
+    }
+    gui.add(Config, "near", 0.01, 20).onChange(cameraChange);
+    gui.add(Config, "far", 1, 100).onChange(cameraChange);
     // gui.add(ARUtils, "isARSupported").listen();
     // gui.add(oControl, "webgl2").listen();
     gui.add(Config, "debug").onFinishChange(Settings.refresh);
