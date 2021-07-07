@@ -96,6 +96,7 @@ class SceneApp extends Scene {
 
   present() {
     window.addEventListener("touchstart", (e) => this._onTouch());
+    this.reset();
 
     this._particleScale = 2.5;
     this._offsetOpen.setTo(0);
@@ -125,24 +126,21 @@ class SceneApp extends Scene {
     this._dBall = new DrawBall();
     this._dCamera = new DrawCamera();
     this._dMark = new DrawMark();
-
+    
     this._blurPass = new BlurPass(256);
-
+    
     this._drawFloor = new DrawFloor();
-
+    
     this.bgColor = [19, 23, 47].map((v) => (v / 255) * 0.5);
     // const bgColor = [24, 37, 100].map((v) => (v / 255) * 0.5);
     this._drawCover = new Draw()
-      .setMesh(Geom.bigTriangle())
-      .useProgram(vsPass, fsCover)
-      .uniform("uColor", this.bgColor)
-      .uniform("uOpacity", 0.9);
-
+    .setMesh(Geom.bigTriangle())
+    .useProgram(vsPass, fsCover)
+    .uniform("uColor", this.bgColor)
+    .uniform("uOpacity", 0.9);
+    
     this._drawRender = new DrawRender();
-    new DrawSave()
-      .setClearColor(0, 0, 0, 1)
-      .bindFrameBuffer(this._fbo.read)
-      .draw();
+    this.reset();
 
     this._drawSim = new Draw()
       .setMesh(Geom.bigTriangle())
@@ -152,6 +150,13 @@ class SceneApp extends Scene {
       .uniform("uMaxRadius", "float", Config.envSize);
 
     this._subScene = new Subscene();
+  }
+
+  reset() {
+    new DrawSave()
+      .setClearColor(0, 0, 0, 1)
+      .bindFrameBuffer(this._fbo.read)
+      .draw();
   }
 
   _onTouch() {

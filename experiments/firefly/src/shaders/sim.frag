@@ -87,7 +87,7 @@ void main(void) {
                 // getting particle data
                 cycleParticle = texture(uDataMap, uvParticle).x;
                 dirParticle = _normalize(texture(uVelMap, uvParticle).xyz);
-                dir = normalize(pos - posParticle);
+                dir = _normalize(pos - posParticle);
 
                 p = dist / radius;
 
