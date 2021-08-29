@@ -8,8 +8,8 @@ class DrawRing extends Draw {
   constructor() {
     super();
 
-    const t = 2;
-    const s = 0.1;
+    const t = 0.5;
+    const s = 0.15;
     const mesh = Geom.cube(s, (s * 0.1) / t, s);
 
     const num = 120 * t;
