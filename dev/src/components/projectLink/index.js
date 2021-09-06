@@ -1,16 +1,18 @@
-import styled from "styled-components";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
 // css
 import "./project-link.scss";
 
 function ProjectLink({ url, cover, title, video }) {
+  const [hovered, setHovered] = useState(false);
   const onMouseEnter = () => {
-    console.log("on Mosue enter");
+    setHovered(true);
   };
   const onMouseLeave = () => {
-    console.log("on Mouse out");
+    setHovered(false);
   };
+
   return (
     <Link to={url}>
       <div
@@ -23,13 +25,15 @@ function ProjectLink({ url, cover, title, video }) {
           src={cover}
           alt={title}
         ></img>
-        <img
-          src={video}
-          className="Experiment-video Experiment-media"
-          alt={title}
-          autoPlay
-          loop
-        ></img>
+        {hovered && (
+          <img
+            src={video}
+            className="Experiment-video Experiment-media"
+            alt={title}
+            autoPlay
+            loop
+          ></img>
+        )}
       </div>
     </Link>
   );
