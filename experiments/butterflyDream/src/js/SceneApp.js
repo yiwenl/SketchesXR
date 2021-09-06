@@ -28,8 +28,9 @@ import { setCamera, hitTest } from "./ARUtils";
 import { vec3, mat4 } from "gl-matrix";
 import DrawMark from "./DrawMark";
 import DrawButterFlies from "./DrawButterflies";
-import DrawSwarm from "./DrawSwarm";
 import DrawSave from "./DrawSave";
+
+import SceneSwarm from "./SceneSwarm";
 
 import vsBasic from "shaders/basic.vert";
 import fsCopy from "shaders/copy.frag";
@@ -50,7 +51,7 @@ class SceneApp extends Scene {
     this.orbitalControl.rx.setTo(-0.1);
     this.orbitalControl.ry.setTo(0.1);
     this.orbitalControl.radius.setTo(0.8);
-    // this.orbitalControl.rx.limit(-0.2, Math.PI / 2);
+    this.orbitalControl.rx.limit(-0.2, Math.PI / 2);
 
     // hit
     this._mtxHit = mat4.create();
@@ -152,7 +153,7 @@ class SceneApp extends Scene {
       .uniform("uCenter", 0)
       .setClearColor(0, 0, 0, 1);
 
-    this._drawSwarm = new DrawSwarm();
+    this._sceneSwarm = new SceneSwarm();
   }
 
   _onTouch() {
@@ -204,6 +205,8 @@ class SceneApp extends Scene {
       .draw();
 
     this._fbo.swap();
+
+    this._sceneSwarm.update();
   }
 
   _checkSwarm() {
@@ -222,10 +225,10 @@ class SceneApp extends Scene {
     const shouldSwarmOpen = DEGREE(theta) > Config.thresholdOpen;
     if (shouldSwarmOpen !== this._shouldSwarmOpen) {
       if (shouldSwarmOpen) {
-        this._drawSwarm.open();
+        this._sceneSwarm.open();
         this._drawBufferflies.close();
       } else {
-        this._drawSwarm.close();
+        this._sceneSwarm.close();
         this._drawBufferflies.open();
         setTimeout(() => {
           this._changeColor();
@@ -262,12 +265,12 @@ class SceneApp extends Scene {
     this._drawHead.uniform("uOpacity", this._offsetOpen.value).draw();
 
     GL.disable(GL.CULL_FACE);
-    this._drawSwarm
-      .uniform("uTime", Scheduler.getElapsedTime())
-      .bindTexture("uColor0Map", this._tColorCurr, 0)
-      .bindTexture("uColor1Map", this._tColorNext, 1)
-      .uniform("uColorOffset", this._offsetColor.value)
-      .draw();
+
+    this._sceneSwarm.render(
+      this._tColorCurr,
+      this._tColorNext,
+      this._offsetColor.value
+    );
 
     mat4.mul(mtx, this._mtxHit, this._containerBufferfly.matrix);
     GL.setModelMatrix(mtx);

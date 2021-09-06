@@ -44,37 +44,6 @@
   }
 }
 
-.Experiment-Item {
-  width: 280px;
-  height: 280px;
-  box-sizing: border-box;
-  margin: 10px;
-  position: relative;
-
-  &:hover {
-    .Experiment-cover {
-      opacity: 0;
-    }
-  }
-}
-
-.Experiment-media {
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  position: absolute;
-}
-
-.Experiment-cover {
-  transition: opacity 0.25s ease-in-out;
-  z-index: 2;
-}
-
-.Experiment-video {
-  z-index: 1;
-}
-
 .Experiment-Content {
   position: fixed;
   z-index: 999;

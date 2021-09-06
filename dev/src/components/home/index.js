@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import { Link } from "react-router-dom";
+import ProjectLink from "../projectLink";
 
 // css
 import "./home.scss";
@@ -29,22 +30,13 @@ function Home() {
       <div className="Experiment-List">
         {projectList.map(({ title, cover, video }, i) => {
           return (
-            <Link to={`/exps/${projectList.length - i}`} key={`project${i}`}>
-              <div className="Experiment-Item">
-                <img
-                  className="Experiment-cover Experiment-media"
-                  src={cover}
-                  alt={title}
-                ></img>
-                <img
-                  src={video}
-                  className="Experiment-video Experiment-media"
-                  alt={title}
-                  autoPlay
-                  loop
-                ></img>
-              </div>
-            </Link>
+            <ProjectLink
+              key={`project${i}`}
+              title={title}
+              cover={process.env.PUBLIC_URL + "/" + cover}
+              video={process.env.PUBLIC_URL + "/" + video}
+              url={`/exps/${projectList.length - i}`}
+            ></ProjectLink>
           );
         })}
       </div>
