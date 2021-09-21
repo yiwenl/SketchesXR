@@ -26,6 +26,7 @@ layout (location = 2) out vec4 oColor2;
 layout (location = 3) out vec4 oColor3;
 layout (location = 4) out vec4 oColor4;
 
+#pragma glslify: snoise = require(glsl-utils/snoise.glsl)
 #pragma glslify: curlNoise = require(glsl-utils/curlNoise.glsl)
 #pragma glslify: rotate = require(glsl-utils/rotate.glsl)
 #define PI 3.141592653
@@ -58,9 +59,11 @@ void main(void) {
     acc.y -= 1.0;
 
     // noise
-    vec3 noise = curlNoise(pos * 4.0 + uTime);
+    float posOffset = snoise(pos * 4.0 + uTime);
+    posOffset = mix(2.0, 10.0, posOffset);
+    vec3 noise = curlNoise(pos * posOffset + uTime);
     noise.y = noise.y * .5 + .5;
-    acc += noise * 0.25;
+    acc += noise * 0.5;
 
     // rotate
     vec3 dir = normalize(vec3(pos.x, 0.0, pos.z));
@@ -69,23 +72,24 @@ void main(void) {
 
     // pulling
     dir = normalize(uCenter - pos);
-    acc += dir * 0.3;
+    acc += dir * 0.1;
 
 
     float speedOffset = mix(1.0, 2.0, extra.x);
     float initSpeed = smoothstep(1.0, 0.8, life);
-    vel += acc * speedOffset * 0.00002 * initSpeed;
+    vel += acc * speedOffset * 0.00004 * initSpeed;
 
 
     pos += vel;
 
     if(pos.y < 0.0) {
         pos.y *= -0.9;
+        vel.xz *= 1.5;
         vel.y = abs(vel.y);
     }
 
 
-    vel *= 0.97;
+    vel *= 0.98;
 
     if(pos.y <= 0.001) {
         data.z += 1.0;
@@ -101,6 +105,7 @@ void main(void) {
         life = 1.0;
         pos = posOrg;
         needUpdateColor = 1.0;
+        vel *= 0.0;
     }
 
     data.x = life;
