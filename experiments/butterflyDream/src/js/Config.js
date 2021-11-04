@@ -1,7 +1,7 @@
 // Config.js
 
 export default {
-  colorIndex: 8,
+  colorIndex: 4,
   numParticles: 4,
   meshDetail: 6,
   numSwarm: 50,
@@ -11,4 +11,5 @@ export default {
   thresholdOpen: 45,
   autoSave: false,
   maxHeight: 16,
+  bg: [107, 1, 11],
 };

@@ -126,7 +126,7 @@ class SceneSwarm {
       .bindTexture("uDataMap", this._fbo.read.getTexture(3), 3)
       .uniform("uTime", "float", Scheduler.getElapsedTime() + this._seed)
       .uniform("uOffsetCircle", "float", this._offsetCircle.value)
-      .uniform("uSpeed", GL.isMobile ? 2 : 1.0)
+      .uniform("uSpeed", GL.isMobile ? 2 : 1.5)
       .draw();
 
     this._fbo.swap();

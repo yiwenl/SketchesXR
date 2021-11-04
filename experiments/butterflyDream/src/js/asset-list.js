@@ -1,5 +1,6 @@
 
 const assetsToLoad = [
+	{"id":"backdrop","url":"assets/obj/backdrop.obj","type":"text"},
 	{"id":"hand","url":"assets/obj/hand.obj","type":"text"},
 	{"id":"head","url":"assets/obj/head.obj","type":"text"},
 	{"id":"plane","url":"assets/obj/plane.obj","type":"text"},

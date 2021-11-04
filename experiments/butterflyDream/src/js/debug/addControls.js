@@ -23,8 +23,11 @@ const addControls = (scene) => {
     gui.add(Config, "meshDetail", [4, 5, 6, 7, 8]).onFinishChange(reload);
     gui.add(Config, "bufferflyMap", [0, 1, 2]).onFinishChange(refresh);
     gui.add(Config, "numParticles", [4, 8, 16, 32]).onFinishChange(reload);
-    gui.add(Config, "numSwarm", [16, 32, 50, 64]).onFinishChange(reload);
+    gui
+      .add(Config, "numSwarm", [16, 32, 50, 64, 80, 128])
+      .onFinishChange(reload);
     gui.add(Config, "bufferflyScale", 0, 1).onFinishChange(refresh);
+    gui.addColor(Config, "bg").onFinishChange(Settings.refresh);
     gui.add(Config, "autoSave").onFinishChange(refresh);
     gui.add(Settings, "reset").name("Reset Default");
   }, 200);

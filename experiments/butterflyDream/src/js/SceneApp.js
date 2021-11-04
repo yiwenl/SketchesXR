@@ -36,6 +36,7 @@ import SceneSwarm from "./SceneSwarm";
 import vsBasic from "shaders/basic.vert";
 import vsFloor from "shaders/floor.vert";
 import fsCopy from "shaders/copy.frag";
+import fsSculpture from "shaders/sculpture.frag";
 import fsFloor from "shaders/floor.frag";
 import vsPass from "shaders/pass.vert";
 import fsSim from "shaders/sim.frag";
@@ -53,7 +54,7 @@ class SceneApp extends Scene {
     this.orbitalControl.rx.setTo(-0.1);
     this.orbitalControl.ry.setTo(0.1);
     this.orbitalControl.radius.setTo(0.8);
-    this.orbitalControl.rx.limit(-0.2, Math.PI / 2);
+    this.orbitalControl.rx.limit(-0.4, Math.PI / 2);
 
     // hit
     this._mtxHit = mat4.create();
@@ -125,7 +126,7 @@ class SceneApp extends Scene {
     this._dAxis = new DrawAxis();
     this._dMark = new DrawMark();
 
-    const shader = new GLShader(vsBasic, fsCopy);
+    const shader = new GLShader(vsBasic, fsSculpture);
 
     this._drawHead = new Draw()
       .setMesh(Assets.get("head"))
@@ -247,9 +248,10 @@ class SceneApp extends Scene {
 
   render() {
     let s;
+    const bgColor = Config.bg.map((v) => v / 255);
     if (!this._hasPresented) {
       const bg = 0.9;
-      GL.clear(bg, bg, bg, 1);
+      GL.clear(bgColor[0], bgColor[1], bgColor[2], 1);
     } else {
       setCamera(GL, this.camera);
       this._checkHit();
@@ -270,11 +272,20 @@ class SceneApp extends Scene {
       .uniform("uIsPresenting", this._hasPresented ? 1.0 : 0.0)
       .uniform("uOpacity", this._offsetOpen.value)
       .uniform("uShadowMatrix", this._sceneSwarm.mtxShadow)
+      .uniform("uColor", bgColor)
       .draw();
     mat4.mul(mtxSculpture, this._mtxHit, this._containerSculpture.matrix);
     GL.setModelMatrix(mtxSculpture);
-    this._drawHand.uniform("uOpacity", this._offsetOpen.value).draw();
-    this._drawHead.uniform("uOpacity", this._offsetOpen.value).draw();
+    this._drawHand
+      .uniform("uIsPresenting", this._hasPresented ? 1.0 : 0.0)
+      .uniform("uColor", bgColor)
+      .uniform("uOpacity", this._offsetOpen.value)
+      .draw();
+    this._drawHead
+      .uniform("uIsPresenting", this._hasPresented ? 1.0 : 0.0)
+      .uniform("uColor", bgColor)
+      .uniform("uOpacity", this._offsetOpen.value)
+      .draw();
 
     GL.disable(GL.CULL_FACE);
     GL.setModelMatrix(mtx);

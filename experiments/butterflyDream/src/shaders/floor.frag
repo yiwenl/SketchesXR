@@ -9,6 +9,7 @@ uniform sampler2D uMap;
 uniform sampler2D uDepthMap;
 uniform float uIsPresenting;
 uniform float uOpacity;
+uniform vec3 uColor;
 
 #define SHADOW_STRENGTH 0.8
 #define PI 3.141592653
@@ -58,9 +59,9 @@ void main(void) {
         color.a *= d;
 
         s = mix(s, 1.0, .75);
-        color.rgb *= s;
+        color.rgb *= s * uColor;
 
-        oColor = vec4(vec3(s), 1.0);
+        oColor = color;
     }
 
 

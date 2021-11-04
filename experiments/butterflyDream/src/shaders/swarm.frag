@@ -55,7 +55,7 @@ void main(void) {
     s = mix(s, 1.0, .75);
     color.rgb *= s;
 
-    color.rgb = pow(color.rgb + 0.1, vec3(1.2));
+    color.rgb = pow(color.rgb + 0.2, vec3(1.5));
 
     oColor = color;
 }
