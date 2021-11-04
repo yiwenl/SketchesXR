@@ -162,11 +162,11 @@ class SceneSwarm {
 
     this._drawButterflies(true);
 
-    const s = 0.05;
-    GL.setModelMatrix(mat4.create());
-    this._drawCamera.draw(this._cameraLight, [1, 0, 0]);
-    this._drawBall.draw(this._light, [s, s, s], [1, 0.5, 0]);
-    this._drawBall.draw(this._center, [s, s, s], [1, 0, 0]);
+    // const s = 0.05;
+    // GL.setModelMatrix(mat4.create());
+    // this._drawCamera.draw(this._cameraLight, [1, 0, 0]);
+    // this._drawBall.draw(this._light, [s, s, s], [1, 0.5, 0]);
+    // this._drawBall.draw(this._center, [s, s, s], [1, 0, 0]);
   }
 
   getTexture(mIndex) {

@@ -11,8 +11,11 @@ uniform float uIsPresenting;
 uniform float uOpacity;
 
 #define SHADOW_STRENGTH 0.8
+#define PI 3.141592653
 
 out vec4 oColor;
+
+#pragma glslify: rotate          = require(glsl-utils/rotate.glsl)
 
 float samplePCF3x3( vec4 sc )
 {
@@ -34,7 +37,9 @@ float samplePCF3x3( vec4 sc )
 }
 
 void main(void) {
-    vec4 color = texture(uMap, vTextureCoord);
+    vec2 uv = vTextureCoord - 0.5;
+    uv = rotate(uv, PI * 0.5);
+    vec4 color = texture(uMap, uv + 0.5);
 
     float shadow = length(color.rgb);
     shadow = 1.0 - shadow;
@@ -57,5 +62,6 @@ void main(void) {
 
         oColor = vec4(vec3(s), 1.0);
     }
+
 
 }
