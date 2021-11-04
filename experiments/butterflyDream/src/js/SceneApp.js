@@ -18,6 +18,7 @@ import {
   getDateString,
   angleBetween,
   DEGREE,
+  iOS,
 } from "./utils";
 import { randomFloor } from "randomutils";
 import Scheduler from "scheduling";
@@ -33,6 +34,7 @@ import DrawSave from "./DrawSave";
 import SceneSwarm from "./SceneSwarm";
 
 import vsBasic from "shaders/basic.vert";
+import vsFloor from "shaders/floor.vert";
 import fsCopy from "shaders/copy.frag";
 import fsFloor from "shaders/floor.frag";
 import vsPass from "shaders/pass.vert";
@@ -77,7 +79,9 @@ class SceneApp extends Scene {
     this._container = new Object3D();
     this._container.y = 0.001;
     this._container.scaleX = this._container.scaleY = this._container.scaleZ = 0.1;
-    this._container.rotationY = -Math.PI / 2;
+    this._containerSculpture = new Object3D();
+    this._containerSculpture.rotationY = -Math.PI / 2;
+    this._container.addChild(this._containerSculpture);
     this._containerBufferfly = new Object3D();
     this._containerBufferfly.scaleX = this._containerBufferfly.scaleY = this._containerBufferfly.scaleZ = 0.5;
     this._container.addChild(this._containerBufferfly);
@@ -106,11 +110,11 @@ class SceneApp extends Scene {
 
   _initTextures() {
     const { numParticles: num } = Config;
+    const type = iOS() ? GL.HALF_FLOAT : GL.FLOAT;
     const oSettings = {
-      type: GL.FLOAT,
+      type,
       minFilter: GL.NEAREST,
       magFilter: GL.NEAREST,
-      mipmap: false,
     };
     this._fbo = new FboPingPong(num, num, oSettings, 4);
   }
@@ -135,8 +139,8 @@ class SceneApp extends Scene {
 
     this._drawFloor = new Draw()
       .setMesh(Assets.get("plane"))
-      .useProgram(vsBasic, fsFloor)
-      .bindTexture("texture", Assets.get("Floor_map"), 0);
+      .useProgram(vsFloor, fsFloor)
+      .bindTexture("uMap", Assets.get("Floor_map"), 0);
 
     this._drawBufferflies = new DrawButterFlies();
 
@@ -194,7 +198,10 @@ class SceneApp extends Scene {
   }
 
   update() {
-    // console.log("update");
+    const mtx = mat4.create();
+    mat4.mul(mtx, this._mtxHit, this._container.matrix);
+    GL.setModelMatrix(mtx);
+
     this._drawSim
       .bindFrameBuffer(this._fbo.write)
       .bindTexture("uPosMap", this._fbo.read.getTexture(0), 0)
@@ -206,7 +213,7 @@ class SceneApp extends Scene {
 
     this._fbo.swap();
 
-    this._sceneSwarm.update();
+    this._sceneSwarm.update(mtx, this._mtxHit);
   }
 
   _checkSwarm() {
@@ -255,16 +262,22 @@ class SceneApp extends Scene {
     this._dMark.uniform("uOffset", this._offsetHit.value).draw();
 
     const mtx = mat4.create();
+    const mtxSculpture = mat4.create();
     mat4.mul(mtx, this._mtxHit, this._container.matrix);
     GL.setModelMatrix(mtx);
     this._drawFloor
+      .bindTexture("uDepthMap", this._sceneSwarm.shadowMap, 1)
       .uniform("uIsPresenting", this._hasPresented ? 1.0 : 0.0)
       .uniform("uOpacity", this._offsetOpen.value)
+      .uniform("uShadowMatrix", this._sceneSwarm.mtxShadow)
       .draw();
+    mat4.mul(mtxSculpture, this._mtxHit, this._containerSculpture.matrix);
+    GL.setModelMatrix(mtxSculpture);
     this._drawHand.uniform("uOpacity", this._offsetOpen.value).draw();
     this._drawHead.uniform("uOpacity", this._offsetOpen.value).draw();
 
     GL.disable(GL.CULL_FACE);
+    GL.setModelMatrix(mtx);
 
     this._sceneSwarm.render(
       this._tColorCurr,
@@ -285,9 +298,12 @@ class SceneApp extends Scene {
       .draw();
     GL.enable(GL.CULL_FACE);
 
-    // s = 64;
-    // GL.viewport(0, 0, s, s);
-    // this._dCopy.draw(this._fbo.read.getTexture(0));
+    s = 256;
+    GL.viewport(0, 0, s, s);
+    this._dCopy.draw(this._sceneSwarm.shadowMap);
+    // this._dCopy.draw(this._sceneSwarm.fbo.read.getTexture(0));
+    // GL.viewport(s, 0, s, s);
+    // this._dCopy.draw(this._sceneSwarm.fbo.write.getTexture(0));
 
     if (canSave && !hasSaved && Config.autoSave) {
       saveImage(GL.canvas, getDateString());

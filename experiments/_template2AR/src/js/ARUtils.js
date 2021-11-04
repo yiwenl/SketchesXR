@@ -14,6 +14,7 @@ let xrViewerSpace;
 let xrHitTestSource;
 let frame;
 let cbSessionEnd;
+let binding;
 
 let mtxHit = mat4.create();
 
@@ -108,10 +109,16 @@ function setCamera(GL, mCamera, mBind = true) {
   const pose = frame.getViewerPose(xrRefSpace);
 
   if (pose) {
+    if(!binding) {
+      binding = new XRWebGLBinding(session, gl);
+    }
     const view = pose.views[0]; // ar has only 1 view
     const { x, y, width, height } = session.renderState.baseLayer.getViewport(
       view
     );
+    if(Math.random() > .95){
+      console.log(view, binding, view.camera)
+    } 
     mCamera.setFromViewProjection(
       view.transform.inverse.matrix,
       view.projectionMatrix

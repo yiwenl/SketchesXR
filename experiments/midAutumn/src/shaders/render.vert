@@ -1,0 +1,31 @@
+#version 300 es
+
+precision highp float;
+in vec3 aVertexPosition;
+in vec2 aTextureCoord;
+
+uniform mat4 uModelMatrix;
+uniform mat4 uViewMatrix;
+uniform mat4 uProjectionMatrix;
+
+uniform sampler2D uPosMap;
+uniform sampler2D uDataMap;
+uniform sampler2D uColorMap;
+uniform vec2 uViewport;
+
+out vec3 vColor;
+
+
+const float radius = 0.0015;
+#pragma glslify: particleSize = require(glsl-utils/particleSize.glsl)
+#pragma glslify: rotate = require(glsl-utils/rotate.glsl)
+
+
+void main(void) {
+    vec3 pos = texture(uPosMap, aTextureCoord).xyz;
+    vColor = texture(uDataMap, aTextureCoord).xyz;
+
+    gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(pos, 1.0);
+    gl_PointSize = particleSize(gl_Position, uProjectionMatrix, uViewport, radius);
+
+}

@@ -1,33 +1,42 @@
-// basic.vert
+#version 300 es
 
 precision highp float;
-attribute vec3 aVertexPosition;
-attribute vec2 aTextureCoord;
-attribute vec3 aNormal;
-attribute vec3 aRandom;
-attribute vec3 aPosOffset;
-attribute vec2 aUV;
+in vec3 aVertexPosition;
+in vec2 aTextureCoord;
+in vec3 aNormal;
+in vec3 aRandom;
+in vec2 aPosOffset;
+in vec2 aUV;
 
 uniform mat4 uModelMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
-uniform float uTime;
-uniform float uMaxHeight;
+uniform mat4 uShadowMatrix;
 
 uniform vec2 uUVScale;
 uniform float uOffset;
+uniform float uTime;
+uniform float uOffsetCircle;
 
-varying vec2 vTextureCoord;
-varying vec3 vNormal;
-varying vec3 vRandom;
-varying vec3 vPosition;
+uniform sampler2D uPosMap;
+uniform sampler2D uVelMap;
+uniform sampler2D uExtraMap;
+
+out vec2 vTextureCoord;
+out vec3 vNormal;
+out vec3 vRandom;
+out vec3 vPosition;
+out vec4 vShadowCoord;
 
 #pragma glslify: align              = require(glsl-utils/align.glsl)
+#pragma glslify: snoise             = require(glsl-utils/snoise.glsl)
 #pragma glslify: rotate             = require(glsl-utils/rotate.glsl)
-#pragma glslify: curlNoise          = require(glsl-utils/curlNoise.glsl)
 #pragma glslify: ease               = require(glsl-easings/circular-in-out)
 #pragma glslify: easeOut            = require(glsl-easings/circular-out)
+#pragma glslify: safeNormalize      = require(./normalize.glsl)
 
+#define PI 3.141592653
+#define CENTER vec3(0.0, 1.5, 0.4)
 
 void main(void) {
     float scaleOpen = ease(clamp(uOffset * 2.0 - aRandom.z, 0.0, 1.0));
@@ -45,25 +54,42 @@ void main(void) {
     if(aVertexPosition.x < 0.0) a *= -1.0;
     pos.xy = rotate(pos.xy, a);
 
-    pos.xy = rotate(pos.xy, 0.85);
 
-    vec3 posOffset = aPosOffset;
-    speed = mix(1.0, 2.0, aRandom.z) * uTime;
-    a = speed * 0.2 + aRandom.y;
-    posOffset.xz = rotate(posOffset.xz, -a);
-    posOffset.y = mod(posOffset.y + speed * 0.2, uMaxHeight);
+    vec3 posOffset = texture(uPosMap, aPosOffset).xyz;
+    vec3 extra = texture(uExtraMap, aPosOffset).xyz;
 
-    vec3 noise = curlNoise(posOffset * 0.1 + aRandom * 0.1 + vec3(uTime * 0.1));
+    float offsetCircle = step(0.01, uOffsetCircle);
+    float yzMultiplier = 1.0;
 
-    vec3 dir = normalize(posOffset * vec3(1.0, 0.0, 1.0));
-    pos = align(pos, dir);
+    if(offsetCircle < 0.5) {
+        vec3 dir = normalize(texture(uVelMap, aPosOffset).xyz);
+        a = atan(dir.z, dir.x) + PI * 0.5;
+        pos.xz = rotate(pos.xz, a);
+    } else {
+        vec3 dir = safeNormalize(posOffset - CENTER);
+        a = 0.0;
+        if(length(dir) > 0.0) {
+            a = atan(dir.y, dir.x) + PI * 0.5;
+        }
+        pos.xz = rotate(pos.xz, PI * 0.5);
+        pos.yz = rotate(pos.yz, PI * 0.5);
+        pos.xy = rotate(pos.xy, a);
 
+        float t = snoise(posOffset * mix(0.1, 0.4, extra.x) + uTime * 0.05 + aRandom.y);
+        yzMultiplier = 1.0 + t * mix(0.2, 0.1, extra.z); 
+    }
+
+    posOffset.yz *= yzMultiplier;
     vPosition = posOffset;
-    pos += posOffset + noise * 0.25;
+    pos += posOffset;
+
     
+    vec4 wsPosition = uModelMatrix * vec4(pos, 1.0);
     
-    gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(pos, 1.0);
+    gl_Position = uProjectionMatrix * uViewMatrix * wsPosition;
+    vShadowCoord = uShadowMatrix * wsPosition;
     vTextureCoord = aTextureCoord * uUVScale + aUV;
+
     vNormal = aNormal;
     vRandom = aRandom;
 }
