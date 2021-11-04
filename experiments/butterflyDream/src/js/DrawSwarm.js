@@ -15,7 +15,7 @@ class DrawSwarm extends Draw {
     super();
 
     const s = 1;
-    const mesh = Geom.plane(s, s, 4, "xz");
+    const mesh = Geom.plane(s, s, Config.meshDetail, "xz");
 
     const { numSwarm: num } = Config;
 

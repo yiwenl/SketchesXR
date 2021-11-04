@@ -72,12 +72,12 @@ class SceneSwarm {
     const r = 2;
     this._cameraLight = new CameraOrtho();
     this._cameraLight.ortho(-r, r, r, -r, 1, 5);
-    this._cameraPos = vec3.fromValues(0, 2, .5);
-    this._cameraTarget = vec3.fromValues(0, 0, -.3);
+    this._cameraPos = vec3.fromValues(0, 2, 0.5);
+    this._cameraTarget = vec3.fromValues(0, 0, -0.3);
     this._mtxShadow = mat4.create();
 
     setTimeout(() => {
-      this._offsetCircle.value = 1;
+      // this._offsetCircle.value = 1;
     }, 1000);
 
     // debug
@@ -126,6 +126,7 @@ class SceneSwarm {
       .bindTexture("uDataMap", this._fbo.read.getTexture(3), 3)
       .uniform("uTime", "float", Scheduler.getElapsedTime() + this._seed)
       .uniform("uOffsetCircle", "float", this._offsetCircle.value)
+      .uniform("uSpeed", GL.isMobile ? 2 : 1.0)
       .draw();
 
     this._fbo.swap();
@@ -147,22 +148,19 @@ class SceneSwarm {
       .bindTexture("uPosMap", this._fbo.read.getTexture(0), 0)
       .bindTexture("uVelMap", this._fbo.read.getTexture(1), 1)
       .bindTexture("uExtraMap", this._fbo.read.getTexture(2), 2)
-      .bindTexture("uDepthMap", tShadow, 5)
-      .bindTexture("uColorMap", Assets.get(`00${Config.colorIndex}`), 6)
-      .bindTexture("uMap", Assets.get(`butterfly`), 7)
+      .bindTexture("uDepthMap", tShadow, 3)
+      .bindTexture("uColorMap", Assets.get(`00${Config.colorIndex}`), 4)
+      .bindTexture("uMap", Assets.get(`butterfly`), 5)
       .uniform("uShadowMatrix", this._mtxShadow)
       .uniform("uTime", Scheduler.getElapsedTime())
       .uniform("uOffsetCircle", "float", this._offsetCircle.value)
       .draw();
   }
 
-  render(tColorCurr, tColorNext, mOffsetColor) {
-    this._drawSwarm
-      .bindTexture("uColor0Map", tColorCurr, 3)
-      .bindTexture("uColor1Map", tColorNext, 4)
-      .uniform("uColorOffset", mOffsetColor);
+  render(mOffsetColor) {
+    this._drawSwarm.uniform("uColorOffset", mOffsetColor);
 
-      this._drawButterflies(true);
+    this._drawButterflies(true);
 
     const s = 0.05;
     GL.setModelMatrix(mat4.create());

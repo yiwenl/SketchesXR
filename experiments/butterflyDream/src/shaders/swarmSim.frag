@@ -10,6 +10,7 @@ uniform sampler2D uDataMap;
 
 uniform float uMaxHeight;
 uniform float uTime;
+uniform float uSpeed;
 uniform float uOffsetCircle;
 
 layout (location = 0) out vec4 oFragColor0;
@@ -54,7 +55,7 @@ void main(void) {
     float offsetCircle = step(0.01, uOffsetCircle);
 
     float speed = mix(1.0, 2.0, extra.y) * 0.0005 * (1.0 - offsetCircle);
-    vel += acc * speed;
+    vel += acc * speed * uSpeed;
     pos += vel;
     vel *= 0.96;
 

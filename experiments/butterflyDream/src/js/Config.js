@@ -3,6 +3,7 @@
 export default {
   colorIndex: 8,
   numParticles: 4,
+  meshDetail: 6,
   numSwarm: 50,
   savePixelRatio: 1.5,
   bufferflyScale: 1,

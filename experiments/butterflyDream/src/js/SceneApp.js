@@ -279,11 +279,7 @@ class SceneApp extends Scene {
     GL.disable(GL.CULL_FACE);
     GL.setModelMatrix(mtx);
 
-    this._sceneSwarm.render(
-      this._tColorCurr,
-      this._tColorNext,
-      this._offsetColor.value
-    );
+    this._sceneSwarm.render(this._offsetColor.value);
 
     mat4.mul(mtx, this._mtxHit, this._containerBufferfly.matrix);
     GL.setModelMatrix(mtx);
@@ -291,8 +287,8 @@ class SceneApp extends Scene {
       .uniform("uTime", Scheduler.getElapsedTime())
       .uniform("uScale", Config.bufferflyScale)
       .uniform("uColorOffset", this._offsetColor.value)
-      .bindTexture("uColor0Map", this._tColorCurr, 0)
-      .bindTexture("uColor1Map", this._tColorNext, 1)
+      .bindTexture("uMap", Assets.get(`butterfly`), 0)
+      .bindTexture("uColorMap", Assets.get(`00${Config.colorIndex}`), 1)
       .bindTexture("uPosMap", this._fbo.read.getTexture(0), 2)
       .bindTexture("uVelMap", this._fbo.read.getTexture(1), 3)
       .draw();
@@ -300,7 +296,7 @@ class SceneApp extends Scene {
 
     s = 256;
     GL.viewport(0, 0, s, s);
-    this._dCopy.draw(this._sceneSwarm.shadowMap);
+    // this._dCopy.draw(this._sceneSwarm.shadowMap);
     // this._dCopy.draw(this._sceneSwarm.fbo.read.getTexture(0));
     // GL.viewport(s, 0, s, s);
     // this._dCopy.draw(this._sceneSwarm.fbo.write.getTexture(0));

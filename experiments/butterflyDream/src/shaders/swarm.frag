@@ -46,7 +46,7 @@ void main(void) {
     color.rgb *= mapColor;
 
     if(!gl_FrontFacing) {
-        color.rgb *= 0.5;
+        color.rgb *= 0.85;
     }
 
     // shadow
