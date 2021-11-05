@@ -14,6 +14,7 @@ uniform mat4 uProjectionMatrix;
 uniform mat4 uShadowMatrix;
 
 uniform vec2 uUVScale;
+uniform float uScale;
 uniform float uOffset;
 uniform float uTime;
 uniform float uOffsetCircle;
@@ -43,7 +44,7 @@ void main(void) {
 
     float t = abs(aTextureCoord.x - 0.5);
     float scale = mix(0.25, 1.0, aRandom.x);
-    vec3 pos = aVertexPosition * scale * uOffset;
+    vec3 pos = aVertexPosition * scale * uOffset * uScale;
 
     float speed = mix(5.0, 7.0, aRandom.y);
     float a = sin(uTime * speed + aTextureCoord.y * 2.5 + aRandom.z);
@@ -62,7 +63,7 @@ void main(void) {
     float yzMultiplier = 1.0;
 
     if(offsetCircle < 0.5) {
-        vec3 dir = normalize(texture(uVelMap, aPosOffset).xyz);
+        vec3 dir = safeNormalize(texture(uVelMap, aPosOffset).xyz);
         a = atan(dir.z, dir.x) + PI * 0.5;
         pos.xz = rotate(pos.xz, a);
     } else {

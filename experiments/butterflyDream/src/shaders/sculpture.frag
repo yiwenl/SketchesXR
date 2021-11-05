@@ -38,6 +38,7 @@ void main(void) {
     vec3 finalColor = blendScreen(color.rgb, uColor);
     color.rgb = mix(color.rgb, finalColor, reflStr);
 
-    color.a *= uOpacity;    
+    color.a *= uOpacity * 1.5;
+    color.a = 1.0;
     gl_FragColor = color;
 }

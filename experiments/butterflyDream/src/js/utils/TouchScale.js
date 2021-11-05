@@ -12,6 +12,7 @@ class TouchScale {
 
     this._initDistance = 0;
     this._initScale = 1;
+    this.sensitivity = 1;
 
     window.addEventListener("touchstart", (e) => this._onTouchStart(e));
     window.addEventListener("touchend", (e) => this._onTouchStart(e));
@@ -42,7 +43,7 @@ class TouchScale {
     const b = getTouchPos(e, 1);
     const dist = vec2.distance(a, b);
     const delta = dist - this._initDistance;
-    this._scale.value = this._initScale + delta * 0.01;
+    this._scale.value = this._initScale + delta * 0.01 * this.sensitivity;
   }
 
   _onTouchEnd() {}

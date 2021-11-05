@@ -27,6 +27,8 @@ import Config from "./Config";
 import Assets from "./Assets";
 import { setCamera, hitTest } from "./ARUtils";
 import { vec3, mat4 } from "gl-matrix";
+import TouchScale from "./utils/TouchScale";
+
 import DrawMark from "./DrawMark";
 import DrawButterFlies from "./DrawButterflies";
 import DrawSave from "./DrawSave";
@@ -36,7 +38,6 @@ import SceneSwarm from "./SceneSwarm";
 
 import vsBasic from "shaders/basic.vert";
 import vsFloor from "shaders/floor.vert";
-import fsCopy from "shaders/copy.frag";
 import fsSculpture from "shaders/sculpture.frag";
 import fsFloor from "shaders/floor.frag";
 import vsPass from "shaders/pass.vert";
@@ -46,6 +47,7 @@ let hasSaved = false;
 let canSave = false;
 
 const DEFAULT_Y = 0.25;
+const RAD = Math.PI / 180;
 
 class SceneApp extends Scene {
   constructor() {
@@ -55,7 +57,9 @@ class SceneApp extends Scene {
     this.orbitalControl.rx.setTo(-0.1);
     this.orbitalControl.ry.setTo(0.1);
     this.orbitalControl.radius.setTo(0.8);
-    this.orbitalControl.rx.limit(-0.3, Math.PI / 2);
+    this.orbitalControl.rx.limit(-0.25, Math.PI / 2);
+    // this.orbitalControl.radius.limit(0.1, 0.8);
+    this.camera.setPerspective(Config.fov * RAD, GL.aspectRatio, 0.1, 100);
 
     // hit
     this._mtxHit = mat4.create();
@@ -89,6 +93,9 @@ class SceneApp extends Scene {
     this._container.addChild(this._containerBufferfly);
     this._containerBufferfly.y = 4;
 
+    this._touchScale = new TouchScale(this._container.scaleX);
+    this._touchScale.sensitivity = 0.1;
+
     this._seed = Math.random() * 0xff;
 
     // set size
@@ -100,6 +107,10 @@ class SceneApp extends Scene {
         canSave = true;
       }, 3500);
     }
+  }
+
+  updateFov() {
+    this.camera.setPerspective(Config.fov * RAD, GL.aspectRatio, 0.1, 100);
   }
 
   present() {
@@ -202,6 +213,7 @@ class SceneApp extends Scene {
   }
 
   update() {
+    this._container.scaleX = this._container.scaleY = this._container.scaleZ = this._touchScale.value;
     const mtx = mat4.create();
     mat4.mul(mtx, this._mtxHit, this._container.matrix);
     GL.setModelMatrix(mtx);
@@ -221,6 +233,9 @@ class SceneApp extends Scene {
   }
 
   _checkSwarm() {
+    if (GL.isMobile && !this._isPresenting) {
+      return;
+    }
     vec3.transformMat4(this._posHit, [0, 0, 0], this._mtxHit);
     vec3.transformMat4(this._posHitFront, [0, 0, 1], this._mtxHit);
 

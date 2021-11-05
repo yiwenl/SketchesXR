@@ -43,6 +43,7 @@ void main(void) {
     if(color.a <= 0.5) {
         discard;
     }
+    color.a = 1.0;
 
     vec3 mapColor = texture(uColorMap, vRandom.xy).rgb;
     color.rgb *= mapColor;

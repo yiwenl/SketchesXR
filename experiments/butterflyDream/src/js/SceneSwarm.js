@@ -44,7 +44,7 @@ class SceneSwarm {
     GL.clear(0, 0, 0, 1);
     this._fboShadow.unbind();
 
-    new DrawSwarmSave()
+    this._drawSave = new DrawSwarmSave()
       .setClearColor(0, 0, 0, 1)
       .bindFrameBuffer(this._fbo.read)
       .draw();
@@ -95,8 +95,16 @@ class SceneSwarm {
     this._drawSwarm.close();
   }
 
+  reset() {
+    this._drawSave
+      .setClearColor(0, 0, 0, 1)
+      .bindFrameBuffer(this._fbo.read)
+      .draw();
+  }
+
   update(mMtx, mMtxHit) {
     const s = mMtx[0];
+    // console.log("scale", s);
     const r = 12 * s;
     this._cameraLight = new CameraOrtho();
     this._cameraLight.ortho(-r, r, r, -r, 1 * s, 30 * s);
@@ -154,6 +162,7 @@ class SceneSwarm {
       .uniform("uOffsetCircle", "float", this._offsetCircle.value)
       .uniform("uContrast", Config.contrast)
       .uniform("uBrightness", Config.brightness)
+      .uniform("uScale", Config.bufferflySwarmScale)
       .draw();
   }
 
