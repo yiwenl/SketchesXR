@@ -43,7 +43,7 @@ class DrawSwarm extends Draw {
       .uniform("uUVScale", [1 / 2, 1 / 3]);
 
     // states
-    this._offset = new TweenNumber(1, "linear", 0.005);
+    this._offset = new TweenNumber(0, "linear", 0.005);
   }
 
   open() {
@@ -55,7 +55,7 @@ class DrawSwarm extends Draw {
   }
 
   draw() {
-    this.uniform("uOffset", 1);
+    this.uniform("uOffset", this._offset.value);
     super.draw();
   }
 }

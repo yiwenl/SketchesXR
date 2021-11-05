@@ -54,7 +54,7 @@ class SceneApp extends Scene {
     this.orbitalControl.rx.setTo(-0.1);
     this.orbitalControl.ry.setTo(0.1);
     this.orbitalControl.radius.setTo(0.8);
-    this.orbitalControl.rx.limit(-0.4, Math.PI / 2);
+    this.orbitalControl.rx.limit(-0.3, Math.PI / 2);
 
     // hit
     this._mtxHit = mat4.create();

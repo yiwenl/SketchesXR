@@ -20,7 +20,7 @@ void main(void) {
         discard;
     }
     if(!gl_FrontFacing) {
-        color.rgb *= 0.5;
+        color.rgb *= 0.85;
     }
     gl_FragColor = color;
 

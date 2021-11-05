@@ -43,7 +43,7 @@ void main(void) {
 
     float t = abs(aTextureCoord.x - 0.5);
     float scale = mix(0.25, 1.0, aRandom.x);
-    vec3 pos = aVertexPosition * scale * scaleOpen;
+    vec3 pos = aVertexPosition * scale * uOffset;
 
     float speed = mix(5.0, 7.0, aRandom.y);
     float a = sin(uTime * speed + aTextureCoord.y * 2.5 + aRandom.z);

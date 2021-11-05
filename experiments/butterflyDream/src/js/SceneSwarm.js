@@ -85,8 +85,6 @@ class SceneSwarm {
     this._center = vec3.create();
     this._drawBall = new DrawBall();
     this._drawCamera = new DrawCamera();
-
-    this.open();
   }
 
   open() {
