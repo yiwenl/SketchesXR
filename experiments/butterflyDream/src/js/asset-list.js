@@ -17,7 +17,8 @@ const assetsToLoad = [
 	{"id":"Floor_map","url":"assets/img/Floor_map.jpg","type":"jpg"},
 	{"id":"butterfly","url":"assets/img/butterfly.png","type":"png"},
 	{"id":"hand_map","url":"assets/img/hand_map.jpg","type":"jpg"},
-	{"id":"head_map","url":"assets/img/head_map.jpg","type":"jpg"}
+	{"id":"head_map","url":"assets/img/head_map.jpg","type":"jpg"},
+	{"id":"noise","url":"assets/img/noise.jpg","type":"jpg"}
 ];
 
 

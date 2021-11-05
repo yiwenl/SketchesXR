@@ -152,6 +152,8 @@ class SceneSwarm {
       .uniform("uShadowMatrix", this._mtxShadow)
       .uniform("uTime", Scheduler.getElapsedTime())
       .uniform("uOffsetCircle", "float", this._offsetCircle.value)
+      .uniform("uContrast", Config.contrast)
+      .uniform("uBrightness", Config.brightness)
       .draw();
   }
 

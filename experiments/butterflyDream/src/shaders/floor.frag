@@ -64,5 +64,4 @@ void main(void) {
         oColor = color;
     }
 
-
 }

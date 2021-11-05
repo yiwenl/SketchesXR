@@ -30,6 +30,7 @@ import { vec3, mat4 } from "gl-matrix";
 import DrawMark from "./DrawMark";
 import DrawButterFlies from "./DrawButterflies";
 import DrawSave from "./DrawSave";
+import DrawFilmGrain from "./DrawFilmGrain";
 
 import SceneSwarm from "./SceneSwarm";
 
@@ -159,6 +160,8 @@ class SceneApp extends Scene {
       .setClearColor(0, 0, 0, 1);
 
     this._sceneSwarm = new SceneSwarm();
+
+    this._drawFilmGrain = new DrawFilmGrain();
   }
 
   _onTouch() {
@@ -250,8 +253,8 @@ class SceneApp extends Scene {
     let s;
     const bgColor = Config.bg.map((v) => v / 255);
     if (!this._hasPresented) {
-      const bg = 0.9;
-      GL.clear(bgColor[0], bgColor[1], bgColor[2], 1);
+      const bgBr = 0.7;
+      GL.clear(bgColor[0] * bgBr, bgColor[1] * bgBr, bgColor[2] * bgBr, 1);
     } else {
       setCamera(GL, this.camera);
       this._checkHit();
@@ -304,6 +307,14 @@ class SceneApp extends Scene {
       .bindTexture("uVelMap", this._fbo.read.getTexture(1), 3)
       .draw();
     GL.enable(GL.CULL_FACE);
+
+    GL.disable(GL.DEPTH_TEST);
+    this._drawFilmGrain
+      .uniform("uRatio", GL.aspectRatio)
+      .uniform("uRandom", Math.random() * 2)
+      .uniform("uStrength", Config.filmGrainStrength)
+      .draw();
+    GL.enable(GL.DEPTH_TEST);
 
     s = 256;
     GL.viewport(0, 0, s, s);

@@ -12,6 +12,8 @@ uniform sampler2D uDepthMap;
 uniform sampler2D uColorMap;
 uniform sampler2D uMap;
 uniform float uColorOffset;
+uniform float uContrast;
+uniform float uBrightness;
 
 out vec4 oColor;
 
@@ -55,7 +57,7 @@ void main(void) {
     s = mix(s, 1.0, .75);
     color.rgb *= s;
 
-    color.rgb = pow(color.rgb + 0.2, vec3(1.5));
+    color.rgb = pow(color.rgb + uBrightness, vec3(uContrast));
 
     oColor = color;
 }

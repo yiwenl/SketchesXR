@@ -27,8 +27,12 @@ const addControls = (scene) => {
       .add(Config, "numSwarm", [16, 32, 50, 64, 80, 128])
       .onFinishChange(reload);
     gui.add(Config, "bufferflyScale", 0, 1).onFinishChange(refresh);
+    gui.add(Config, "contrast", 1, 5).onFinishChange(refresh);
+    gui.add(Config, "brightness", 0, 1).onFinishChange(refresh);
+    gui.add(Config, "filmGrainStrength", 0, 0.5).onFinishChange(refresh);
     gui.addColor(Config, "bg").onFinishChange(Settings.refresh);
-    gui.add(Config, "autoSave").onFinishChange(refresh);
+    // gui.add(Config, "autoSave").onFinishChange(refresh);
+    gui.add(oControl, "save").name("Save Settings");
     gui.add(Settings, "reset").name("Reset Default");
   }, 200);
 };
