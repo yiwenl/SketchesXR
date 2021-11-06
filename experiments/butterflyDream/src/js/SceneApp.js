@@ -204,6 +204,7 @@ class SceneApp extends Scene {
       this._offsetHit.value = 0.0;
       this._offsetOpen.value = 1;
       this._drawBufferflies.open();
+      setState(States.LANDED);
     }
   }
 
@@ -213,6 +214,7 @@ class SceneApp extends Scene {
       if (mtxHit !== null) {
         this._offsetHit.value = 1;
         mat4.copy(this._mtxHit, mtxHit);
+        setState(States.INTRO);
       }
     }
   }
@@ -237,7 +239,7 @@ class SceneApp extends Scene {
     this._fbo.swap();
 
     this._sceneSwarm.update(mtx, this._mtxHit);
-    this._sceneIntro.update(this._mtxHit);
+    GL.isMobile && this._sceneIntro.update(this._mtxHit);
   }
 
   _checkSwarm() {
@@ -263,7 +265,6 @@ class SceneApp extends Scene {
 
     if (GL.isMobile && !this._hasStarted) {
       this._initAngle = DEGREE(theta);
-      console.log(this._initAngle, this._dirCam, this._dirFront);
       return;
     }
 
@@ -311,21 +312,22 @@ class SceneApp extends Scene {
       .uniform("uColor", bgColor)
       .draw();
 
+    GL.isMobile && this._sceneIntro.render(this._mtxHit);
+
     mat4.mul(mtxSculpture, this._mtxHit, this._containerSculpture.matrix);
     GL.setModelMatrix(mtxSculpture);
     this._drawHand
       .uniform("uIsPresenting", this._hasPresented ? 1.0 : 0.0)
       .uniform("uColor", bgColor)
-      .uniform("uOpacity", this._offsetOpen.value);
-    // .draw();
+      .uniform("uOpacity", this._offsetOpen.value)
+      .draw();
     this._drawHead
       .uniform("uIsPresenting", this._hasPresented ? 1.0 : 0.0)
       .uniform("uColor", bgColor)
-      .uniform("uOpacity", this._offsetOpen.value);
-    // .draw();
+      .uniform("uOpacity", this._offsetOpen.value)
+      .draw();
 
     GL.disable(GL.CULL_FACE);
-    this._sceneIntro.render(this._mtxHit);
 
     mat4.mul(mtx, this._mtxHit, this._containerBufferfly.matrix);
     GL.setModelMatrix(mtx);
