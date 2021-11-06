@@ -57,17 +57,6 @@ class SceneSwarm {
       .uniform("uMaxHeight", Config.maxHeight)
       .setClearColor(0, 0, 0, 1);
 
-    this._offsetCircle = new EaseNumber(0, 0.001);
-
-    window.addEventListener("keydown", (e) => {
-      if (e.code === "Space") {
-        this._offsetCircle.easing =
-          this._offsetCircle.targetValue === 0 ? 0.001 : 0.1;
-        this._offsetCircle.value = 1 - this._offsetCircle.targetValue;
-        console.log(this._offsetCircle.targetValue);
-      }
-    });
-
     // shadow
     const r = 2;
     this._cameraLight = new CameraOrtho();
@@ -75,10 +64,6 @@ class SceneSwarm {
     this._cameraPos = vec3.fromValues(0, 2, 0.5);
     this._cameraTarget = vec3.fromValues(0, 0, -0.3);
     this._mtxShadow = mat4.create();
-
-    setTimeout(() => {
-      // this._offsetCircle.value = 1;
-    }, 1000);
 
     // debug
     this._light = vec3.create();
@@ -131,7 +116,7 @@ class SceneSwarm {
       .bindTexture("uExtraMap", this._fbo.read.getTexture(2), 2)
       .bindTexture("uDataMap", this._fbo.read.getTexture(3), 3)
       .uniform("uTime", "float", Scheduler.getElapsedTime() + this._seed)
-      .uniform("uOffsetCircle", "float", this._offsetCircle.value)
+      .uniform("uOffsetCircle", "float", 0)
       .uniform("uSpeed", GL.isMobile ? 2 : 1.5)
       .draw();
 
@@ -159,15 +144,14 @@ class SceneSwarm {
       .bindTexture("uMap", Assets.get(`butterfly`), 5)
       .uniform("uShadowMatrix", this._mtxShadow)
       .uniform("uTime", Scheduler.getElapsedTime())
-      .uniform("uOffsetCircle", "float", this._offsetCircle.value)
       .uniform("uContrast", Config.contrast)
       .uniform("uBrightness", Config.brightness)
       .uniform("uScale", Config.bufferflySwarmScale)
       .draw();
   }
 
-  render(mOffsetColor) {
-    this._drawSwarm.uniform("uColorOffset", mOffsetColor);
+  render(mOffsetCircle) {
+    this._drawSwarm.uniform("uOffsetCircle", mOffsetCircle);
 
     this._drawButterflies(true);
 

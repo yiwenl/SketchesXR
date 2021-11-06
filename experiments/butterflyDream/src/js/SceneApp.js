@@ -22,6 +22,7 @@ import {
 } from "./utils";
 import { randomFloor } from "randomutils";
 import Scheduler from "scheduling";
+import { onStateChange, setState, States } from "./States";
 
 import Config from "./Config";
 import Assets from "./Assets";
@@ -34,6 +35,7 @@ import DrawButterFlies from "./DrawButterflies";
 import DrawSave from "./DrawSave";
 import DrawFilmGrain from "./DrawFilmGrain";
 
+import SceneIntro from "./SceneIntro";
 import SceneSwarm from "./SceneSwarm";
 
 import vsBasic from "shaders/basic.vert";
@@ -52,6 +54,10 @@ const RAD = Math.PI / 180;
 class SceneApp extends Scene {
   constructor() {
     super();
+
+    onStateChange((o) => {
+      console.log("State change", o);
+    });
 
     // camera
     this.orbitalControl.rx.setTo(-0.1);
@@ -73,14 +79,20 @@ class SceneApp extends Scene {
     // states
     this._offsetHit = new EaseNumber(0);
     this._offsetOpen = new EaseNumber(1);
-    this._offsetColor = new TweenNumber(0, "linear", 0.01);
+    this._offsetColor = new TweenNumber(0, "linear", 0.01); // TODO Remove this
     this._hasStarted = false;
     this._hasPresented = false;
     this._shouldSwarmOpen = false;
     this._colorIndex = randomFloor(0, 3);
+    this._initAngle = 0;
 
-    this._tColorCurr = Assets.get(`butterfly${this._colorIndex}`);
-    this._tColorNext = Assets.get(`butterfly${this._colorIndex}`);
+    this._offsetCircle = new EaseNumber(0, 0.01);
+
+    window.addEventListener("keydown", (e) => {
+      if (e.code === "Space") {
+        this._offsetCircle.value = 1 - this._offsetCircle.targetValue;
+      }
+    });
 
     this._container = new Object3D();
     this._container.y = 0.001;
@@ -88,6 +100,10 @@ class SceneApp extends Scene {
     this._containerSculpture = new Object3D();
     this._containerSculpture.rotationY = -Math.PI / 2;
     this._container.addChild(this._containerSculpture);
+
+    this._containerSwarm = new Object3D();
+    this._container.addChild(this._containerSwarm);
+
     this._containerBufferfly = new Object3D();
     this._containerBufferfly.scaleX = this._containerBufferfly.scaleY = this._containerBufferfly.scaleZ = 0.5;
     this._container.addChild(this._containerBufferfly);
@@ -171,13 +187,14 @@ class SceneApp extends Scene {
       .setClearColor(0, 0, 0, 1);
 
     this._sceneSwarm = new SceneSwarm();
+    this._sceneIntro = new SceneIntro();
 
     this._drawFilmGrain = new DrawFilmGrain();
   }
 
   _onTouch() {
     if (this._hasStarted) {
-      this._changeColor();
+      this._offsetCircle.value = 1 - this._offsetCircle.targetValue;
       return;
     }
     const mtxHit = hitTest();
@@ -188,18 +205,6 @@ class SceneApp extends Scene {
       this._offsetOpen.value = 1;
       this._drawBufferflies.open();
     }
-  }
-
-  _changeColor() {
-    const idxCurr = this._colorIndex;
-    const idxNext = this._colorIndex === 2 ? 0 : this._colorIndex + 1;
-    this._tColorCurr = Assets.get(`butterfly${idxCurr}`);
-    this._tColorNext = Assets.get(`butterfly${idxNext}`);
-
-    this._offsetColor.setTo(0);
-    this._offsetColor.value = 1;
-
-    this._colorIndex = idxNext;
   }
 
   _checkHit() {
@@ -213,9 +218,11 @@ class SceneApp extends Scene {
   }
 
   update() {
+    this._containerSwarm.rotationX = (this._offsetCircle.value * Math.PI) / 2;
+
     this._container.scaleX = this._container.scaleY = this._container.scaleZ = this._touchScale.value;
     const mtx = mat4.create();
-    mat4.mul(mtx, this._mtxHit, this._container.matrix);
+    mat4.mul(mtx, this._mtxHit, this._containerSwarm.matrix);
     GL.setModelMatrix(mtx);
 
     this._drawSim
@@ -230,10 +237,11 @@ class SceneApp extends Scene {
     this._fbo.swap();
 
     this._sceneSwarm.update(mtx, this._mtxHit);
+    this._sceneIntro.update(this._mtxHit);
   }
 
   _checkSwarm() {
-    if (GL.isMobile && !this._isPresenting) {
+    if (GL.isMobile && !this._hasPresented) {
       return;
     }
     vec3.transformMat4(this._posHit, [0, 0, 0], this._mtxHit);
@@ -246,9 +254,21 @@ class SceneApp extends Scene {
     vec3.sub(this._dirCam, this.camera.position, this._posHit);
     this._dirCam[1] *= 0.0;
     vec3.normalize(this._dirCam, this._dirCam);
+    const vDiff = vec3.create();
+    vec3.sub(vDiff, this._dirCam, this._dirFront);
+    if (vec3.length(vDiff) === 0) {
+      return;
+    }
     const theta = angleBetween(this._dirCam, this._dirFront);
 
-    const shouldSwarmOpen = DEGREE(theta) > Config.thresholdOpen;
+    if (GL.isMobile && !this._hasStarted) {
+      this._initAngle = DEGREE(theta);
+      console.log(this._initAngle, this._dirCam, this._dirFront);
+      return;
+    }
+
+    const t = Math.abs(DEGREE(theta) - this._initAngle);
+    const shouldSwarmOpen = t > Config.thresholdOpen;
     if (shouldSwarmOpen !== this._shouldSwarmOpen) {
       if (shouldSwarmOpen) {
         this._sceneSwarm.open();
@@ -256,9 +276,6 @@ class SceneApp extends Scene {
       } else {
         this._sceneSwarm.close();
         this._drawBufferflies.open();
-        setTimeout(() => {
-          this._changeColor();
-        }, 1000);
       }
       this._shouldSwarmOpen = shouldSwarmOpen;
     }
@@ -283,6 +300,7 @@ class SceneApp extends Scene {
 
     const mtx = mat4.create();
     const mtxSculpture = mat4.create();
+
     mat4.mul(mtx, this._mtxHit, this._container.matrix);
     GL.setModelMatrix(mtx);
     this._drawFloor
@@ -292,23 +310,22 @@ class SceneApp extends Scene {
       .uniform("uShadowMatrix", this._sceneSwarm.mtxShadow)
       .uniform("uColor", bgColor)
       .draw();
+
     mat4.mul(mtxSculpture, this._mtxHit, this._containerSculpture.matrix);
     GL.setModelMatrix(mtxSculpture);
     this._drawHand
       .uniform("uIsPresenting", this._hasPresented ? 1.0 : 0.0)
       .uniform("uColor", bgColor)
-      .uniform("uOpacity", this._offsetOpen.value)
-      .draw();
+      .uniform("uOpacity", this._offsetOpen.value);
+    // .draw();
     this._drawHead
       .uniform("uIsPresenting", this._hasPresented ? 1.0 : 0.0)
       .uniform("uColor", bgColor)
-      .uniform("uOpacity", this._offsetOpen.value)
-      .draw();
+      .uniform("uOpacity", this._offsetOpen.value);
+    // .draw();
 
     GL.disable(GL.CULL_FACE);
-    GL.setModelMatrix(mtx);
-
-    this._sceneSwarm.render(this._offsetColor.value);
+    this._sceneIntro.render(this._mtxHit);
 
     mat4.mul(mtx, this._mtxHit, this._containerBufferfly.matrix);
     GL.setModelMatrix(mtx);
@@ -321,6 +338,12 @@ class SceneApp extends Scene {
       .bindTexture("uPosMap", this._fbo.read.getTexture(0), 2)
       .bindTexture("uVelMap", this._fbo.read.getTexture(1), 3)
       .draw();
+
+    // draw swarm
+    mat4.mul(mtx, this._mtxHit, this._containerSwarm.matrix);
+    GL.setModelMatrix(mtx);
+    this._sceneSwarm.render(this._offsetCircle.value);
+
     GL.enable(GL.CULL_FACE);
 
     GL.disable(GL.DEPTH_TEST);

@@ -19,9 +19,9 @@ const addControls = (scene) => {
     gui
       .add(Config, "colorIndex", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
       .onFinishChange(refresh);
-    gui.add(Config, "savePixelRatio", [1, 1.5, 2]).onFinishChange(reload);
+    // gui.add(Config, "savePixelRatio", [1, 1.5, 2]).onFinishChange(reload);
     gui.add(Config, "meshDetail", [4, 5, 6, 7, 8]).onFinishChange(reload);
-    gui.add(Config, "bufferflyMap", [0, 1, 2]).onFinishChange(refresh);
+    // gui.add(Config, "bufferflyMap", [0, 1, 2]).onFinishChange(refresh);
     gui.add(Config, "numParticles", [4, 8, 16, 32]).onFinishChange(reload);
     gui
       .add(Config, "numSwarm", [16, 32, 50, 64, 80, 128])

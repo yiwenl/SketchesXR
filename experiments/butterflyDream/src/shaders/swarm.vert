@@ -59,28 +59,20 @@ void main(void) {
     vec3 posOffset = texture(uPosMap, aPosOffset).xyz;
     vec3 extra = texture(uExtraMap, aPosOffset).xyz;
 
-    float offsetCircle = step(0.01, uOffsetCircle);
-    float yzMultiplier = 1.0;
+    vec3 dir = safeNormalize(texture(uVelMap, aPosOffset).xyz);
+    a = atan(dir.z, dir.x) + PI * 0.5;
+    pos.xz = rotate(pos.xz, a);
 
-    if(offsetCircle < 0.5) {
-        vec3 dir = safeNormalize(texture(uVelMap, aPosOffset).xyz);
-        a = atan(dir.z, dir.x) + PI * 0.5;
-        pos.xz = rotate(pos.xz, a);
-    } else {
-        vec3 dir = safeNormalize(posOffset - CENTER);
-        a = 0.0;
-        if(length(dir) > 0.0) {
-            a = atan(dir.y, dir.x) + PI * 0.5;
-        }
-        pos.xz = rotate(pos.xz, PI * 0.5);
-        pos.yz = rotate(pos.yz, PI * 0.5);
-        pos.xy = rotate(pos.xy, a);
+    float offset = clamp(uOffsetCircle * 2.0 - aRandom.z, 0.0, 1.0);
+    offset = ease(offset);
 
-        float t = snoise(posOffset * mix(0.1, 0.4, extra.x) + uTime * 0.05 + aRandom.y);
-        yzMultiplier = 1.0 + t * mix(0.2, 0.1, extra.z); 
-    }
+    float yMul = mix(1.0, -0.1, offset);
+    float xzMul = mix(1.0, 0.5, offset);
+    posOffset.xz *= xzMul;
+    posOffset.y *= yMul;
+    posOffset.y -= mix(0.0, 1.0, offset);
+    posOffset.z -= mix(0.0, 0.8, offset);
 
-    posOffset.yz *= yzMultiplier;
     vPosition = posOffset;
     pos += posOffset;
 

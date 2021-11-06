@@ -9,7 +9,7 @@ export default {
   bufferflyScale: 0.9893121403124143,
   bufferflySwarmScale: 0.49821869005206904,
   bufferflyMap: 0,
-  thresholdOpen: 45,
+  thresholdOpen: 30,
   autoSave: false,
   maxHeight: 16,
   bg: [107, 1, 11],
