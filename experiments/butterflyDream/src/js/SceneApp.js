@@ -276,7 +276,7 @@ class SceneApp extends Scene {
         this._drawBufferflies.close();
       } else {
         this._sceneSwarm.close();
-        this._drawBufferflies.open();
+        // this._drawBufferflies.open();
       }
       this._shouldSwarmOpen = shouldSwarmOpen;
     }

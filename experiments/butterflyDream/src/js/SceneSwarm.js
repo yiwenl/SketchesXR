@@ -3,7 +3,6 @@ import {
   GL,
   Draw,
   Geom,
-  EaseNumber,
   DrawCamera,
   DrawBall,
   FrameBuffer,
@@ -38,8 +37,11 @@ class SceneSwarm {
     this._seed = Math.random() * 0xff;
 
     this._fbo = new FboPingPong(num, num, oSettings, 4);
-    const fboSize = 1024;
-    this._fboShadow = new FrameBuffer(fboSize, fboSize);
+    const fboSize = 1024 * 2;
+    this._fboShadow = new FrameBuffer(fboSize, fboSize, {
+      minFilter: GL.LINEAR,
+      magFilter: GL.LINEAR,
+    });
     this._fboShadow.bind();
     GL.clear(0, 0, 0, 1);
     this._fboShadow.unbind();
@@ -147,6 +149,7 @@ class SceneSwarm {
       .uniform("uContrast", Config.contrast)
       .uniform("uBrightness", Config.brightness)
       .uniform("uScale", Config.bufferflySwarmScale)
+      .uniform("uMaxHeight", Config.maxHeight)
       .draw();
   }
 

@@ -57,6 +57,9 @@ class DrawButterFlies extends Draw {
   }
 
   draw() {
+    if (this._offset.value <= 0.01) {
+      return;
+    }
     this.uniform("uOffset", this._offset.value);
     super.draw();
   }

@@ -65,15 +65,15 @@ void main(void) {
 
     float offset = clamp(uOffsetCircle * 2.0 - aRandom.z, 0.0, 1.0);
     offset = ease(offset);
+    vPosition = posOffset;
 
     float yMul = mix(1.0, -0.1, offset);
-    float xzMul = mix(1.0, 0.5, offset);
+    float xzMul = mix(1.0, 0.75, offset);
     posOffset.xz *= xzMul;
     posOffset.y *= yMul;
     posOffset.y -= mix(0.0, 1.0, offset);
-    posOffset.z -= mix(0.0, 0.8, offset);
+    posOffset.z -= mix(0.0, 0.0, offset);
 
-    vPosition = posOffset;
     pos += posOffset;
 
     

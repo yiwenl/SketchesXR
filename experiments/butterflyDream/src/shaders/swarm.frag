@@ -14,6 +14,7 @@ uniform sampler2D uMap;
 uniform float uColorOffset;
 uniform float uContrast;
 uniform float uBrightness;
+uniform float uMaxHeight;
 
 out vec4 oColor;
 
@@ -40,10 +41,15 @@ void main(void) {
     float offset = clamp(-vRandom.y + uColorOffset * 2.0, 0.0, 1.0);
 
     vec4 color = texture(uMap, vTextureCoord);
+
+    float h = uMaxHeight * 0.5;
+    float yOffset = abs(vPosition.y - h);
+    yOffset = smoothstep(h, h * 0.85, yOffset);
+
     if(color.a <= 0.5) {
         discard;
     }
-    color.a = 1.0;
+    color.a *= yOffset;
 
     vec3 mapColor = texture(uColorMap, vRandom.xy).rgb;
     color.rgb *= mapColor;
