@@ -1,9 +1,5 @@
 
 const assetsToLoad = [
-	{"id":"backdrop","url":"assets/obj/backdrop.obj","type":"text"},
-	{"id":"hand","url":"assets/obj/hand.obj","type":"text"},
-	{"id":"head","url":"assets/obj/head.obj","type":"text"},
-	{"id":"plane","url":"assets/obj/plane.obj","type":"text"},
 	{"id":"000","url":"assets/img/000.jpg","type":"jpg"},
 	{"id":"001","url":"assets/img/001.jpg","type":"jpg"},
 	{"id":"002","url":"assets/img/002.jpg","type":"jpg"},
@@ -18,7 +14,11 @@ const assetsToLoad = [
 	{"id":"butterfly","url":"assets/img/butterfly.png","type":"png"},
 	{"id":"hand_map","url":"assets/img/hand_map.jpg","type":"jpg"},
 	{"id":"head_map","url":"assets/img/head_map.jpg","type":"jpg"},
-	{"id":"noise","url":"assets/img/noise.jpg","type":"jpg"}
+	{"id":"noise","url":"assets/img/noise.jpg","type":"jpg"},
+	{"id":"backdrop","url":"assets/obj/backdrop.obj","type":"text"},
+	{"id":"hand","url":"assets/obj/hand.obj","type":"text"},
+	{"id":"head","url":"assets/obj/head.obj","type":"text"},
+	{"id":"plane","url":"assets/obj/plane.obj","type":"text"}
 ];
 
 

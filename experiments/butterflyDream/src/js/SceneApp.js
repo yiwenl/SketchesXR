@@ -22,7 +22,7 @@ import {
 } from "./utils";
 import { randomFloor } from "randomutils";
 import Scheduler from "scheduling";
-import { onStateChange, setState, States } from "./States";
+import { onStateChange, setState, States, getState } from "./States";
 
 import Config from "./Config";
 import Assets from "./Assets";
@@ -121,8 +121,13 @@ class SceneApp extends Scene {
     if (!GL.isMobile) {
       setTimeout(() => {
         canSave = true;
-      }, 3500);
+      }, 3000);
     }
+  }
+
+  toggleState() {
+    const state = getState();
+    setState(state === States.CIRCLING ? States.SWARMING : States.CIRCLING);
   }
 
   updateFov() {
