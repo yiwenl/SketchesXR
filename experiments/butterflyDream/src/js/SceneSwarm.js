@@ -31,6 +31,7 @@ class SceneSwarm {
 
     // init
     const { numSwarm: num } = Config;
+    console.log("Swarm size :", num);
     const type = iOS() ? GL.HALF_FLOAT : GL.FLOAT;
     const oSettings = {
       type,

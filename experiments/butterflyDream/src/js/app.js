@@ -9,6 +9,7 @@ import SceneApp from "./SceneApp";
 import preload from "./utils/preload";
 import { logError } from "./utils";
 import addControls from "./debug/addControls";
+import Config from "./Config";
 
 let canvas;
 let container;
@@ -46,6 +47,7 @@ function _init3D() {
   if (process.env.NODE_ENV === "development" && !ARUtils.isARSupported) {
     Settings.init();
   }
+  Config.numSwarm = GL.isMobile ? 64 : 128;
 
   scene = new SceneApp();
 

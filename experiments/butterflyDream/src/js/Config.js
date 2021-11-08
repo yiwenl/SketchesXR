@@ -4,7 +4,7 @@ export default {
   colorIndex: 4,
   numParticles: 4,
   meshDetail: 6,
-  numSwarm: "64",
+  numSwarm: 64,
   savePixelRatio: 1.5,
   bufferflyScale: 0.9893121403124143,
   bufferflySwarmScale: 1,

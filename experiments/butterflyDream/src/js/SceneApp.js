@@ -62,7 +62,7 @@ class SceneApp extends Scene {
     this.orbitalControl.ry.setTo(0.1);
     this.orbitalControl.radius.setTo(0.8);
     this.orbitalControl.rx.limit(-0.25, Math.PI / 2);
-    // this.orbitalControl.radius.limit(0.1, 0.8);
+    this.orbitalControl.radius.limit(0.1, 0.8);
     this.camera.setPerspective(Config.fov * RAD, GL.aspectRatio, 0.1, 100);
 
     // hit
@@ -194,7 +194,7 @@ class SceneApp extends Scene {
   }
 
   _onStateChange(o) {
-    console.log("state change", o, "isARSupported", isARSupported);
+    // console.log("state change", o, "isARSupported", isARSupported);
     const durMul = isARSupported ? 1.5 : 1.0;
     if (o === States.CIRCLING) {
       setTimeout(() => {
