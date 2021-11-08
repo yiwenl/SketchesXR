@@ -55,9 +55,7 @@ class SceneApp extends Scene {
   constructor() {
     super();
 
-    onStateChange((o) => {
-      console.log("State change", o);
-    });
+    onStateChange((o) => this._onStateChange(o));
 
     // camera
     this.orbitalControl.rx.setTo(-0.1);
@@ -198,9 +196,22 @@ class SceneApp extends Scene {
     this._drawFilmGrain = new DrawFilmGrain();
   }
 
+  _onStateChange(o) {
+    console.log("state change", o);
+    if (o === States.CIRCLING) {
+      setTimeout(() => {
+        this._offsetCircle.setTo(1);
+      }, 4000);
+    } else if (o === States.SWARMING) {
+      setTimeout(() => {
+        this._offsetCircle.setTo(0);
+      }, 2000);
+    }
+  }
+
   _onTouch() {
     if (this._hasStarted) {
-      this._offsetCircle.value = 1 - this._offsetCircle.targetValue;
+      // this._offsetCircle.value = 1 - this._offsetCircle.targetValue;
       return;
     }
     const mtxHit = hitTest();
@@ -299,7 +310,7 @@ class SceneApp extends Scene {
       this._checkHit();
     }
 
-    // this._checkSwarm();
+    this._checkSwarm();
 
     GL.setModelMatrix(this._mtxHit);
     s = this._offsetHit.value * 0.005;

@@ -23,6 +23,8 @@ import vsPass from "shaders/pass.vert";
 import fsSim from "shaders/swarmSim.frag";
 import { mat4, vec3 } from "gl-matrix";
 
+const INCREASED_SPEED = 3;
+
 class SceneSwarm {
   constructor() {
     this._drawSwarm = new DrawSwarm();
@@ -30,7 +32,6 @@ class SceneSwarm {
     // init
     const { numSwarm: num } = Config;
     const type = iOS() ? GL.HALF_FLOAT : GL.FLOAT;
-    // const type = GL.FLOAT;
     const oSettings = {
       type,
       minFilter: GL.NEAREST,
@@ -38,7 +39,7 @@ class SceneSwarm {
     };
 
     this._seed = Math.random() * 0xff;
-    this._centerCircling = vec3.fromValues(0.0, 1.5, -1.0)
+    this._centerCircling = vec3.fromValues(0.0, 1.5, -1.0);
 
     this._fbo = new FboPingPong(num, num, oSettings, 4);
     const fboSize = 1024 * 2;
@@ -73,6 +74,7 @@ class SceneSwarm {
 
     this._swarmBrightness = new TweenNumber(0, "quinticIn", 0.005);
     this._offsetCircle = new EaseNumber(0, 0.02);
+    this._speed = new TweenNumber(1, "cubicIn", 0.01);
 
     onStateChange((o) => {
       if (o === States.CIRCLING) {
@@ -93,14 +95,36 @@ class SceneSwarm {
   }
 
   circling() {
+    this._speed.easing = "circularIn";
     this._offsetCircle.value = 1;
     this._swarmBrightness.value = 1;
-    setTimeout(() => this.close(), 2500);
+    this._speed.value = INCREASED_SPEED;
+    setTimeout(() => this.close(), 2300);
+
+    setTimeout(() => {
+      this.reset();
+      this._offsetCircle.setTo(0);
+      this._swarmBrightness.setTo(0);
+      console.log("easing", this._speed.easing);
+      this._speed.easing = "circularOut";
+      this._speed.setTo(5);
+      this._speed.value = 1;
+      this.open();
+    }, 4000);
   }
 
   swarming() {
-    this._offsetCircle.value = 0;
-    this._swarmBrightness.value = 0;
+    setTimeout(() => this.close(), 500);
+    this._speed.easing = "circularOut";
+    this._speed.value = INCREASED_SPEED;
+
+    setTimeout(() => {
+      this.reset();
+      this._speed.easing = "circularIn";
+      this._speed.setTo(5);
+      this._speed.value = 1;
+      this.open();
+    }, 2000);
   }
 
   open() {
@@ -148,8 +172,8 @@ class SceneSwarm {
       .bindTexture("uDataMap", this._fbo.read.getTexture(3), 3)
       .uniform("uTime", "float", Scheduler.getElapsedTime() + this._seed)
       .uniform("uOffsetCircle", "float", this._offsetCircle.value)
-      .uniform("uSpeed", GL.isMobile ? 2 : 1.5)
-      .uniform('uCircleCenter', this._centerCircling)
+      .uniform("uSpeed", (GL.isMobile ? 2 : 1.5) * this._speed.value)
+      .uniform("uCircleCenter", this._centerCircling)
       .draw();
 
     this._fbo.swap();
@@ -181,7 +205,8 @@ class SceneSwarm {
       .uniform("uBrCircling", this._swarmBrightness.value)
       .uniform("uScale", Config.bufferflySwarmScale)
       .uniform("uMaxHeight", Config.maxHeight)
-      .uniform('uCircleCenter', this._centerCircling)
+      .uniform("uCircleCenter", this._centerCircling)
+
       .draw();
   }
 
