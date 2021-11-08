@@ -42,8 +42,12 @@ const addControls = (scene) => {
     // gui.add(Config, "autoSave").onFinishChange(refresh);
     gui.add(oControl, "save").name("Save Settings");
     gui.add(Settings, "reset").name("Reset Default");
-    gui.add(scene, "toggleState");
-    gui.add(scene._sceneSwarm, "reset");
+    // gui.add(scene, "toggleState");
+    // gui.add(scene._sceneSwarm, "reset");
+
+    if (GL.isMobile) {
+      dat.GUI.toggleHide();
+    }
   }, 200);
 };
 

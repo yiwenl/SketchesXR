@@ -56,7 +56,7 @@ void main(void) {
 
     // circling state
     dir = safeNormalize((pos - uCircleCenter) * vec3(1.0, 1.0, 0.0));
-    dir.xy = rotate(dir.xy, PI * mix(0.6, 0.7, data.x));
+    dir.xy = rotate(dir.xy, PI * mix(0.65, 0.75, data.x));
     acc += dir * 2.0 * uOffsetCircle;
     float az = pos.z > uCircleCenter.z ? -1.0 : 1.0;
     acc.z += az * uOffsetCircle;

@@ -4,6 +4,7 @@ import Stats from "stats.js";
 import Scheduler from "scheduling";
 
 // INIT DAT-GUI
+window.dat = dat;
 window.gui = new dat.GUI({ width: 300 });
 const div = document.body.querySelector(".dg.ac");
 div.style.zIndex = "999";

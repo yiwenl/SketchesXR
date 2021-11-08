@@ -79,18 +79,20 @@ class SceneApp extends Scene {
     this._offsetOpen = new EaseNumber(1);
     this._offsetColor = new TweenNumber(0, "linear", 0.01); // TODO Remove this
     this._hasStarted = false;
+    this._hasOpened = false;
     this._hasPresented = false;
     this._shouldSwarmOpen = false;
+    this._isInTransition = false;
     this._colorIndex = randomFloor(0, 3);
     this._initAngle = 0;
 
     this._offsetCircle = new EaseNumber(0, 0.01);
 
     window.addEventListener("keydown", (e) => {
-      e.code === "Space" && this.toggleState();
-      if (e.code === "Space") {
-        // this._offsetCircle.value = 1 - this._offsetCircle.targetValue;
-      }
+      e.code === "Space" &&
+        this._hasOpened &&
+        !this._isInTransition &&
+        this.toggleState();
     });
 
     this._container = new Object3D();
@@ -125,6 +127,7 @@ class SceneApp extends Scene {
   }
 
   toggleState() {
+    this._isInTransition = true;
     const state = getState();
     setState(state === States.CIRCLING ? States.SWARMING : States.CIRCLING);
   }
@@ -198,20 +201,27 @@ class SceneApp extends Scene {
 
   _onStateChange(o) {
     console.log("state change", o);
+    const durMul = GL.isMobile ? 1.5 : 1.0;
     if (o === States.CIRCLING) {
       setTimeout(() => {
         this._offsetCircle.setTo(1);
-      }, 4000);
+        setTimeout(() => {
+          this._isInTransition = false;
+        }, 1000);
+      }, 4000 * durMul);
     } else if (o === States.SWARMING) {
       setTimeout(() => {
         this._offsetCircle.setTo(0);
-      }, 2000);
+        setTimeout(() => {
+          this._isInTransition = false;
+        }, 1000);
+      }, 2000 * durMul);
     }
   }
 
   _onTouch() {
-    if (this._hasStarted) {
-      // this._offsetCircle.value = 1 - this._offsetCircle.targetValue;
+    if (this._hasOpened && !this._isInTransition) {
+      this.toggleState();
       return;
     }
     const mtxHit = hitTest();
@@ -282,19 +292,26 @@ class SceneApp extends Scene {
 
     if (GL.isMobile && !this._hasStarted) {
       this._initAngle = DEGREE(theta);
+      if (isNaN(this._initAngle)) {
+        this._initAngle = 0;
+      }
       return;
     }
 
     const t = Math.abs(DEGREE(theta) - this._initAngle);
+
     const shouldSwarmOpen = t > Config.thresholdOpen;
-    if (shouldSwarmOpen !== this._shouldSwarmOpen) {
-      if (shouldSwarmOpen) {
+    if (shouldSwarmOpen !== this._shouldSwarmOpen && !this._isInTransition) {
+      if (this._hasOpened) {
+        this.toggleState();
+      }
+
+      if (!this._hasOpened && shouldSwarmOpen) {
         this._sceneSwarm.open();
         this._drawBufferflies.close();
-      } else {
-        this._sceneSwarm.close();
-        // this._drawBufferflies.open();
+        this._hasOpened = true;
       }
+
       this._shouldSwarmOpen = shouldSwarmOpen;
     }
   }

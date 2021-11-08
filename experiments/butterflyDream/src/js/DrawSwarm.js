@@ -1,4 +1,4 @@
-import { Draw, Geom, TweenNumber } from "alfrid";
+import { Draw, Geom, TweenNumber, GL } from "alfrid";
 import { randomGaussian, random, randomFloor } from "randomutils";
 
 import Config from "./Config";
@@ -43,7 +43,8 @@ class DrawSwarm extends Draw {
       .uniform("uUVScale", [1 / 2, 1 / 3]);
 
     // states
-    this._offset = new TweenNumber(0, "linear", 0.01);
+    const mul = GL.isMobile ? 1.75 : 1.0;
+    this._offset = new TweenNumber(0, "linear", 0.01 * mul);
   }
 
   open() {

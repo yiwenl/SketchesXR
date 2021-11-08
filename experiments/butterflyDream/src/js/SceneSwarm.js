@@ -72,9 +72,12 @@ class SceneSwarm {
     this._cameraTarget = vec3.fromValues(0, 0, -0.3);
     this._mtxShadow = mat4.create();
 
-    this._swarmBrightness = new TweenNumber(0, "quinticIn", 0.005);
-    this._offsetCircle = new EaseNumber(0, 0.02);
-    this._speed = new TweenNumber(1, "cubicIn", 0.01);
+    const mul = GL.isMobile ? 1.75 : 1;
+
+    this._swarmBrightness = new TweenNumber(0, "quinticIn", 0.005 * mul);
+    // this._offsetCircle = new EaseNumber(0, 0.02 * mul);
+    this._offsetCircle = new TweenNumber(0, "circularInOut", 0.01 * mul);
+    this._speed = new TweenNumber(1, "cubicIn", 0.01 * mul);
 
     onStateChange((o) => {
       if (o === States.CIRCLING) {
@@ -89,32 +92,30 @@ class SceneSwarm {
     this._center = vec3.create();
     this._drawBall = new DrawBall();
     this._drawCamera = new DrawCamera();
-
-    // debug
-    this.open();
   }
 
   circling() {
+    const mulDur = GL.isMobile ? 1.75 : 1;
     this._speed.easing = "circularIn";
     this._offsetCircle.value = 1;
     this._swarmBrightness.value = 1;
     this._speed.value = INCREASED_SPEED;
-    setTimeout(() => this.close(), 2300);
+    setTimeout(() => this.close(), 2300 * mulDur);
 
     setTimeout(() => {
       this.reset();
       this._offsetCircle.setTo(0);
       this._swarmBrightness.setTo(0);
-      console.log("easing", this._speed.easing);
       this._speed.easing = "circularOut";
       this._speed.setTo(5);
       this._speed.value = 1;
       this.open();
-    }, 4000);
+    }, 4000 * mulDur);
   }
 
   swarming() {
-    setTimeout(() => this.close(), 500);
+    const mulDur = GL.isMobile ? 1.75 : 1;
+    setTimeout(() => this.close(), 500 * mulDur);
     this._speed.easing = "circularOut";
     this._speed.value = INCREASED_SPEED;
 
@@ -124,7 +125,7 @@ class SceneSwarm {
       this._speed.setTo(5);
       this._speed.value = 1;
       this.open();
-    }, 2000);
+    }, 2000 * mulDur);
   }
 
   open() {
