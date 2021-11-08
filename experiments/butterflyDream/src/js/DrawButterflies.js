@@ -63,6 +63,10 @@ class DrawButterFlies extends Draw {
     this.uniform("uOffset", this._offset.value);
     super.draw();
   }
+
+  get isShowing() {
+    return this._offset.value > 0;
+  }
 }
 
 export default DrawButterFlies;

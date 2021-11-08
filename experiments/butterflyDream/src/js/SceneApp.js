@@ -252,16 +252,18 @@ class SceneApp extends Scene {
     mat4.mul(mtx, this._mtxHit, this._containerSwarm.matrix);
     GL.setModelMatrix(mtx);
 
-    this._drawSim
-      .bindFrameBuffer(this._fbo.write)
-      .bindTexture("uPosMap", this._fbo.read.getTexture(0), 0)
-      .bindTexture("uVelMap", this._fbo.read.getTexture(1), 1)
-      .bindTexture("uExtraMap", this._fbo.read.getTexture(2), 2)
-      .bindTexture("uDataMap", this._fbo.read.getTexture(3), 3)
-      .uniform("uTime", "float", Scheduler.getElapsedTime() + this._seed)
-      .draw();
+    if (this._drawBufferflies.isShowing) {
+      this._drawSim
+        .bindFrameBuffer(this._fbo.write)
+        .bindTexture("uPosMap", this._fbo.read.getTexture(0), 0)
+        .bindTexture("uVelMap", this._fbo.read.getTexture(1), 1)
+        .bindTexture("uExtraMap", this._fbo.read.getTexture(2), 2)
+        .bindTexture("uDataMap", this._fbo.read.getTexture(3), 3)
+        .uniform("uTime", "float", Scheduler.getElapsedTime() + this._seed)
+        .draw();
 
-    this._fbo.swap();
+      this._fbo.swap();
+    }
 
     this._sceneSwarm.update(mtx, this._mtxHit);
     isARSupported && this._sceneIntro.update(this._mtxHit);
