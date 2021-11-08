@@ -121,7 +121,7 @@ class SceneSwarm {
 
     setTimeout(() => {
       this.reset();
-      this._speed.easing = "circularIn";
+      this._speed.easing = "circularInOut";
       this._speed.setTo(5);
       this._speed.value = 1;
       this.open();

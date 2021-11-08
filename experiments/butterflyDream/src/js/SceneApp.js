@@ -219,6 +219,9 @@ class SceneApp extends Scene {
       this.toggleState();
       return;
     }
+    if (this._hasStarted) {
+      return;
+    }
     const mtxHit = hitTest();
     if (mtxHit !== null) {
       mat4.copy(this._mtxHit, mtxHit);
