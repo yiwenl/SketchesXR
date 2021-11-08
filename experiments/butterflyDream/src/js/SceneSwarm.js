@@ -5,6 +5,8 @@ import {
   Geom,
   DrawCamera,
   DrawBall,
+  EaseNumber,
+  TweenNumber,
   FrameBuffer,
   CameraOrtho,
 } from "alfrid";
@@ -12,6 +14,7 @@ import { iOS, biasMatrix } from "./utils";
 import Assets from "./Assets";
 import Config from "./Config";
 import DrawSwarm from "./DrawSwarm";
+import { onStateChange, States } from "./States";
 import DrawSwarmSave from "./DrawSwarmSave";
 import DrawDebug from "./DrawDebug";
 import Scheduler from "scheduling";
@@ -35,6 +38,7 @@ class SceneSwarm {
     };
 
     this._seed = Math.random() * 0xff;
+    this._centerCircling = vec3.fromValues(0.0, 1.5, -1.0)
 
     this._fbo = new FboPingPong(num, num, oSettings, 4);
     const fboSize = 1024 * 2;
@@ -67,6 +71,17 @@ class SceneSwarm {
     this._cameraTarget = vec3.fromValues(0, 0, -0.3);
     this._mtxShadow = mat4.create();
 
+    this._swarmBrightness = new TweenNumber(0, "quinticIn", 0.005);
+    this._offsetCircle = new EaseNumber(0, 0.02);
+
+    onStateChange((o) => {
+      if (o === States.CIRCLING) {
+        this.circling();
+      } else if (o === States.SWARMING) {
+        this.swarming();
+      }
+    });
+
     // debug
     this._light = vec3.create();
     this._center = vec3.create();
@@ -75,6 +90,17 @@ class SceneSwarm {
 
     // debug
     this.open();
+  }
+
+  circling() {
+    this._offsetCircle.value = 1;
+    this._swarmBrightness.value = 1;
+    setTimeout(() => this.close(), 2500);
+  }
+
+  swarming() {
+    this._offsetCircle.value = 0;
+    this._swarmBrightness.value = 0;
   }
 
   open() {
@@ -121,8 +147,9 @@ class SceneSwarm {
       .bindTexture("uExtraMap", this._fbo.read.getTexture(2), 2)
       .bindTexture("uDataMap", this._fbo.read.getTexture(3), 3)
       .uniform("uTime", "float", Scheduler.getElapsedTime() + this._seed)
-      .uniform("uOffsetCircle", "float", 0)
+      .uniform("uOffsetCircle", "float", this._offsetCircle.value)
       .uniform("uSpeed", GL.isMobile ? 2 : 1.5)
+      .uniform('uCircleCenter', this._centerCircling)
       .draw();
 
     this._fbo.swap();
@@ -151,8 +178,10 @@ class SceneSwarm {
       .uniform("uTime", Scheduler.getElapsedTime())
       .uniform("uContrast", Config.contrast)
       .uniform("uBrightness", Config.brightness)
+      .uniform("uBrCircling", this._swarmBrightness.value)
       .uniform("uScale", Config.bufferflySwarmScale)
       .uniform("uMaxHeight", Config.maxHeight)
+      .uniform('uCircleCenter', this._centerCircling)
       .draw();
   }
 

@@ -29,7 +29,7 @@ class DrawSwarm extends Draw {
         let v = randomFloor(0, 3) / 3;
         posOffsets.push([i / num + 0.5 / num, j / num + 0.5 / num]);
         uvOffsets.push([u, v]);
-        randoms.push([randomGaussian(), randomGaussian(), randomGaussian()]);
+        randoms.push([randomGaussian(), randomGaussian(), Math.random()]);
       }
     }
 
@@ -51,7 +51,7 @@ class DrawSwarm extends Draw {
   }
 
   close() {
-    // this._offset.value = 0;
+    this._offset.value = 0;
   }
 
   draw() {

@@ -24,7 +24,7 @@ const addControls = (scene) => {
     // gui.add(Config, "bufferflyMap", [0, 1, 2]).onFinishChange(refresh);
     gui.add(Config, "numParticles", [4, 8, 16, 32]).onFinishChange(reload);
     gui
-      .add(Config, "numSwarm", [16, 32, 50, 64, 80, 128])
+      .add(Config, "numSwarm", [16, 32, 50, 64, 80, 128, 256])
       .onFinishChange(reload);
     gui.add(Config, "bufferflyScale", 0, 1).onFinishChange(refresh);
     gui.add(Config, "bufferflySwarmScale", 0, 1).onFinishChange(refresh);
@@ -43,6 +43,7 @@ const addControls = (scene) => {
     gui.add(oControl, "save").name("Save Settings");
     gui.add(Settings, "reset").name("Reset Default");
     gui.add(scene, "toggleState");
+    gui.add(scene._sceneSwarm, "reset");
   }, 200);
 };
 

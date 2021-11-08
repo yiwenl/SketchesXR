@@ -12,6 +12,7 @@ uniform float uMaxHeight;
 uniform float uTime;
 uniform float uSpeed;
 uniform float uOffsetCircle;
+uniform vec3 uCircleCenter;
 
 layout (location = 0) out vec4 oFragColor0;
 layout (location = 1) out vec4 oFragColor1;
@@ -24,6 +25,7 @@ layout (location = 3) out vec4 oFragColor3;
 #pragma glslify: rotate             = require(glsl-utils/rotate.glsl)
 
 #define PI 3.141529653
+
 
 void main(void) {
     vec3 pos = texture(uPosMap, vTextureCoord).rgb;
@@ -52,23 +54,26 @@ void main(void) {
     float f = smoothstep(5.0, 8.0, dist);
     acc += dirPull * f;
 
-    float offsetCircle = step(0.01, uOffsetCircle);
+    // circling state
+    dir = safeNormalize((pos - uCircleCenter) * vec3(1.0, 1.0, 0.0));
+    dir.xy = rotate(dir.xy, PI * mix(0.6, 0.7, data.x));
+    acc += dir * 2.0 * uOffsetCircle;
+    float az = pos.z > uCircleCenter.z ? -1.0 : 1.0;
+    acc.z += az * uOffsetCircle;
 
-    float speed = mix(1.0, 2.0, extra.y) * 0.0005 * (1.0 - offsetCircle);
+
+    float speed = mix(1.0, 2.0, extra.y) * 0.0005;
     vel += acc * speed * uSpeed;
     pos += vel;
     vel *= 0.96;
 
-    if(pos.y > uMaxHeight && offsetCircle <= 0.01) {
+    if(pos.y > uMaxHeight) {
         pos.y -= uMaxHeight;
         pos.xz = safeNormalize(pos.xz) * mix(5.0, 10.0, extra.z);
-        pos.xz = rotate(pos.xz, extra.y * PI);
+        pos.xz = rotate(pos.xz, data.y * PI + data.x);
         vel *= 0.1;
     }
 
-    data.xy = rotate(data.xy, mix(1.0, 20.0, extra.z) * 0.001);
-    vec3 target = data + vec3(0.0, 1.5, 0.4);
-    pos += (target - pos) * uOffsetCircle * 0.15;
 
     oFragColor0 = vec4(pos, 1.0);
     oFragColor1 = vec4(vel, 1.0);

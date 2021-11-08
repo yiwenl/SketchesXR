@@ -30,14 +30,7 @@ class DrawSwarmSave extends Draw {
     };
 
     const getCircPos = () => {
-      const r = random(1, 5);
-      const a = random(Math.PI * 2);
-
-      const z = -randomGaussian() - 1;
-      const y = Math.sin(a) * r;
-      const x = Math.cos(a) * r;
-
-      return [x, y, z];
+      return [Math.random(), Math.random(), Math.random()];
     };
 
     let index = 0;

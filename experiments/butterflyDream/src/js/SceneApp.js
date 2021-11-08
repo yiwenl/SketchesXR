@@ -89,8 +89,9 @@ class SceneApp extends Scene {
     this._offsetCircle = new EaseNumber(0, 0.01);
 
     window.addEventListener("keydown", (e) => {
+      e.code === "Space" && this.toggleState();
       if (e.code === "Space") {
-        this._offsetCircle.value = 1 - this._offsetCircle.targetValue;
+        // this._offsetCircle.value = 1 - this._offsetCircle.targetValue;
       }
     });
 
@@ -298,7 +299,7 @@ class SceneApp extends Scene {
       this._checkHit();
     }
 
-    this._checkSwarm();
+    // this._checkSwarm();
 
     GL.setModelMatrix(this._mtxHit);
     s = this._offsetHit.value * 0.005;

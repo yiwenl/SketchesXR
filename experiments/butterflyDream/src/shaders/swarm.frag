@@ -14,7 +14,9 @@ uniform sampler2D uMap;
 uniform float uColorOffset;
 uniform float uContrast;
 uniform float uBrightness;
+uniform float uBrCircling;
 uniform float uMaxHeight;
+uniform vec3 uCircleCenter;
 
 out vec4 oColor;
 
@@ -64,7 +66,12 @@ void main(void) {
     s = mix(s, 1.0, .75);
     color.rgb *= s;
 
-    color.rgb = pow(color.rgb + uBrightness, vec3(uContrast));
+    float distToCenter = distance(vPosition.xy, uCircleCenter.xy);
+    float diff = 5.0;
+    float t = uBrCircling * (15.0 + diff) - vRandom.z * diff;
+    float br = smoothstep(t, t - 1.0, distToCenter);
+
+    color.rgb = pow(color.rgb + uBrightness + br, vec3(uContrast));
 
     oColor = color;
 }
