@@ -5,12 +5,12 @@ import {
   Geom,
   DrawCamera,
   DrawBall,
-  EaseNumber,
   TweenNumber,
   FrameBuffer,
   CameraOrtho,
 } from "alfrid";
 import { iOS, biasMatrix } from "./utils";
+import { isARSupported } from "./ARUtils";
 import Assets from "./Assets";
 import Config from "./Config";
 import DrawSwarm from "./DrawSwarm";
@@ -72,7 +72,7 @@ class SceneSwarm {
     this._cameraTarget = vec3.fromValues(0, 0, -0.3);
     this._mtxShadow = mat4.create();
 
-    const mul = GL.isMobile ? 1.75 : 1;
+    const mul = isARSupported ? 1.75 : 1;
 
     this._swarmBrightness = new TweenNumber(0, "quinticIn", 0.005 * mul);
     // this._offsetCircle = new EaseNumber(0, 0.02 * mul);
@@ -95,7 +95,7 @@ class SceneSwarm {
   }
 
   circling() {
-    const mulDur = GL.isMobile ? 1.75 : 1;
+    const mulDur = isARSupported ? 1.75 : 1;
     this._speed.easing = "circularIn";
     this._offsetCircle.value = 1;
     this._swarmBrightness.value = 1;
@@ -114,7 +114,7 @@ class SceneSwarm {
   }
 
   swarming() {
-    const mulDur = GL.isMobile ? 1.75 : 1;
+    const mulDur = isARSupported ? 1.75 : 1;
     setTimeout(() => this.close(), 500 * mulDur);
     this._speed.easing = "circularOut";
     this._speed.value = INCREASED_SPEED;
@@ -173,7 +173,7 @@ class SceneSwarm {
       .bindTexture("uDataMap", this._fbo.read.getTexture(3), 3)
       .uniform("uTime", "float", Scheduler.getElapsedTime() + this._seed)
       .uniform("uOffsetCircle", "float", this._offsetCircle.value)
-      .uniform("uSpeed", (GL.isMobile ? 2 : 1.5) * this._speed.value)
+      .uniform("uSpeed", (isARSupported ? 2 : 1.5) * this._speed.value)
       .uniform("uCircleCenter", this._centerCircling)
       .draw();
 

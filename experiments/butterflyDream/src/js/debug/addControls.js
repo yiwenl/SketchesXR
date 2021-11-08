@@ -7,6 +7,9 @@ import { GL } from "alfrid";
 import * as ARUtils from "../ARUtils";
 
 const addControls = (scene) => {
+  if (!window.gui) {
+    return;
+  }
   const oControl = {
     save: () => {
       saveJson(Config, "Settings");

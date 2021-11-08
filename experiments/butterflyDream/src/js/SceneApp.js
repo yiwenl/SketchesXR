@@ -26,7 +26,7 @@ import { onStateChange, setState, States, getState } from "./States";
 
 import Config from "./Config";
 import Assets from "./Assets";
-import { setCamera, hitTest } from "./ARUtils";
+import { setCamera, hitTest, isARSupported } from "./ARUtils";
 import { vec3, mat4 } from "gl-matrix";
 import TouchScale from "./utils/TouchScale";
 
@@ -118,12 +118,6 @@ class SceneApp extends Scene {
     // set size
     this.resize();
     this._drawBufferflies.open();
-
-    if (!GL.isMobile) {
-      setTimeout(() => {
-        canSave = true;
-      }, 3000);
-    }
   }
 
   toggleState() {
@@ -200,8 +194,8 @@ class SceneApp extends Scene {
   }
 
   _onStateChange(o) {
-    console.log("state change", o);
-    const durMul = GL.isMobile ? 1.5 : 1.0;
+    console.log("state change", o, "isARSupported", isARSupported);
+    const durMul = isARSupported ? 1.5 : 1.0;
     if (o === States.CIRCLING) {
       setTimeout(() => {
         this._offsetCircle.setTo(1);
@@ -220,6 +214,7 @@ class SceneApp extends Scene {
   }
 
   _onTouch() {
+    if (!isARSupported) return;
     if (this._hasOpened && !this._isInTransition) {
       this.toggleState();
       return;
@@ -266,11 +261,11 @@ class SceneApp extends Scene {
     this._fbo.swap();
 
     this._sceneSwarm.update(mtx, this._mtxHit);
-    GL.isMobile && this._sceneIntro.update(this._mtxHit);
+    isARSupported && this._sceneIntro.update(this._mtxHit);
   }
 
   _checkSwarm() {
-    if (GL.isMobile && !this._hasPresented) {
+    if (isARSupported && !this._hasPresented) {
       return;
     }
     vec3.transformMat4(this._posHit, [0, 0, 0], this._mtxHit);
@@ -290,7 +285,7 @@ class SceneApp extends Scene {
     }
     const theta = angleBetween(this._dirCam, this._dirFront);
 
-    if (GL.isMobile && !this._hasStarted) {
+    if (isARSupported && !this._hasStarted) {
       this._initAngle = DEGREE(theta);
       if (isNaN(this._initAngle)) {
         this._initAngle = 0;
@@ -346,7 +341,8 @@ class SceneApp extends Scene {
       .uniform("uColor", bgColor)
       .draw();
 
-    GL.isMobile && this._sceneIntro.render(this._mtxHit);
+    // GL.isMobile && this._sceneIntro.render(this._mtxHit);
+    isARSupported && this._sceneIntro.render(this._mtxHit);
 
     mat4.mul(mtxSculpture, this._mtxHit, this._containerSculpture.matrix);
     GL.setModelMatrix(mtxSculpture);
