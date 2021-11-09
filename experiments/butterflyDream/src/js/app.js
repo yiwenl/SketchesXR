@@ -74,6 +74,7 @@ function checkAR() {
 }
 
 function initStartButton() {
+  scene.setXREnterframe();
   const btnAR = document.body.querySelector(".btnAR");
   btnAR.addEventListener("click", () => {
     ARUtils.init(GL.gl).then((gl) => {

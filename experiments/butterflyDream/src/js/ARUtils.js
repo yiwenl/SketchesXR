@@ -16,6 +16,8 @@ let frame;
 let cbSessionEnd;
 let pose;
 
+let cbLoop;
+
 let mtxHit = mat4.create();
 
 const checkSupported = function checkSupported() {
@@ -93,6 +95,9 @@ const init = function(mGl) {
 function loop(t, mFrame) {
   frame = mFrame;
   getPose(frame);
+  if (cbLoop) {
+    cbLoop();
+  }
   session.requestAnimationFrame((t, frame) => loop(t, frame));
 }
 
@@ -135,6 +140,9 @@ function hitTest() {
   if (!frame || !xrHitTestSource) {
     return null;
   }
+  // if (Math.random() > 0.95) {
+  //   console.log("hit test");
+  // }
   const hitTestResults = frame.getHitTestResults(xrHitTestSource);
   if (hitTestResults.length > 0) {
     const pose = hitTestResults[0].getPose(xrRefSpace);
@@ -150,6 +158,10 @@ function onSessionEnd(mCb) {
   cbSessionEnd = mCb;
 }
 
+function onEnterFrame(mCb) {
+  cbLoop = mCb;
+}
+
 export {
   isARSupported,
   session,
@@ -161,4 +173,5 @@ export {
   bind,
   hitTest,
   onSessionEnd,
+  onEnterFrame,
 };

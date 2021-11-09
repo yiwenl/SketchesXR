@@ -26,7 +26,7 @@ import { onStateChange, setState, States, getState } from "./States";
 
 import Config from "./Config";
 import Assets from "./Assets";
-import { setCamera, hitTest, isARSupported } from "./ARUtils";
+import { setCamera, hitTest, isARSupported, onEnterFrame } from "./ARUtils";
 import { vec3, mat4 } from "gl-matrix";
 import TouchScale from "./utils/TouchScale";
 
@@ -118,6 +118,14 @@ class SceneApp extends Scene {
     // set size
     this.resize();
     this._drawBufferflies.open();
+  }
+
+  setXREnterframe() {
+    console.log("set enter frame, isARSupported", isARSupported);
+    if (isARSupported) {
+      onEnterFrame(() => this._render());
+    }
+    this._render();
   }
 
   toggleState() {
@@ -317,6 +325,12 @@ class SceneApp extends Scene {
   }
 
   render() {
+    if (!isARSupported) {
+      this._render();
+    }
+  }
+
+  _render() {
     let s;
     const bgColor = Config.bg.map((v) => v / 255);
     if (!this._hasPresented) {
@@ -401,6 +415,10 @@ class SceneApp extends Scene {
     if (canSave && !hasSaved && Config.autoSave) {
       saveImage(GL.canvas, getDateString());
       hasSaved = true;
+    }
+
+    if (!this._hasPresented && isARSupported) {
+      requestAnimationFrame(() => this._render());
     }
   }
 
