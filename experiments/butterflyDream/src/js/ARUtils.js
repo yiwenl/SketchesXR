@@ -14,6 +14,7 @@ let xrViewerSpace;
 let xrHitTestSource;
 let frame;
 let cbSessionEnd;
+let pose;
 
 let mtxHit = mat4.create();
 
@@ -91,6 +92,7 @@ const init = function(mGl) {
 // animation frame
 function loop(t, mFrame) {
   frame = mFrame;
+  getPose(frame);
   session.requestAnimationFrame((t, frame) => loop(t, frame));
 }
 
@@ -99,13 +101,15 @@ function bind() {
   gl.bindFramebuffer(gl.FRAMEBUFFER, session.renderState.baseLayer.framebuffer);
 }
 
+function getPose(frame) {
+  if (frame) pose = frame.getViewerPose(xrRefSpace);
+}
+
 // set the camera from XRFrame.pose
 function setCamera(GL, mCamera, mBind = true) {
   if (!session || !frame) {
     return;
   }
-
-  const pose = frame.getViewerPose(xrRefSpace);
 
   if (pose) {
     const view = pose.views[0]; // ar has only 1 view
@@ -131,7 +135,6 @@ function hitTest() {
   if (!frame || !xrHitTestSource) {
     return null;
   }
-
   const hitTestResults = frame.getHitTestResults(xrHitTestSource);
   if (hitTestResults.length > 0) {
     const pose = hitTestResults[0].getPose(xrRefSpace);
