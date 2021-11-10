@@ -118,6 +118,10 @@ class SceneApp extends Scene {
     // set size
     this.resize();
     this._drawBufferflies.open();
+
+    this._timeTouchStart = 0;
+    window.addEventListener("touchstart", (e) => this._onTouchStart());
+    window.addEventListener("touchend", (e) => this._onTouchEnd());
   }
 
   setXREnterframe() {
@@ -139,7 +143,6 @@ class SceneApp extends Scene {
   }
 
   present() {
-    window.addEventListener("touchstart", (e) => this._onTouch());
     this._drawBufferflies.close(true);
 
     this._offsetOpen.setTo(0);
@@ -221,8 +224,10 @@ class SceneApp extends Scene {
     }
   }
 
-  _onTouch() {
+  _onTouchStart() {
+    this._timeTouchStart = new Date().getTime();
     if (!isARSupported) return;
+
     if (this._hasOpened && !this._isInTransition) {
       this.toggleState();
       return;
@@ -238,6 +243,22 @@ class SceneApp extends Scene {
       this._offsetOpen.value = 1;
       this._drawBufferflies.open();
       setState(States.LANDED);
+    }
+  }
+
+  _onTouchEnd() {
+    const THRESHOLD = 300;
+    let timeTouch, delta;
+    if (isARSupported) {
+      if (this._hasOpened) {
+        timeTouch = new Date().getTime();
+        delta = timeTouch - this._timeTouchStart;
+        if (delta < THRESHOLD) this.toggleState();
+      }
+    } else {
+      timeTouch = new Date().getTime();
+      delta = timeTouch - this._timeTouchStart;
+      if (delta < THRESHOLD) this.toggleState();
     }
   }
 
