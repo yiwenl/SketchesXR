@@ -249,17 +249,10 @@ class SceneApp extends Scene {
   _onTouchEnd() {
     const THRESHOLD = 300;
     let timeTouch, delta;
-    if (isARSupported) {
-      if (this._hasOpened) {
-        timeTouch = new Date().getTime();
-        delta = timeTouch - this._timeTouchStart;
-        if (delta < THRESHOLD) this.toggleState();
-      }
-    } else {
-      timeTouch = new Date().getTime();
-      delta = timeTouch - this._timeTouchStart;
-      if (delta < THRESHOLD) this.toggleState();
-    }
+    if (isARSupported) return;
+    timeTouch = new Date().getTime();
+    delta = timeTouch - this._timeTouchStart;
+    if (delta < THRESHOLD) this.toggleState();
   }
 
   _checkHit() {
