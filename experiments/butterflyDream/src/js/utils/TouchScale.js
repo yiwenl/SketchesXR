@@ -46,6 +46,10 @@ class TouchScale {
     this._scale.value = this._initScale + delta * 0.01 * this.sensitivity;
   }
 
+  setTo(mValue) {
+    this._scale.setTo(mValue);
+  }
+
   _onTouchEnd() {}
 
   get value() {

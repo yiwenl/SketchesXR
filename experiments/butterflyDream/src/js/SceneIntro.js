@@ -24,7 +24,7 @@ class SceneIntro {
     this._containerButterfly = new Object3D();
 
     // butterfly
-    let s = 0.05;
+    let s = 0.1;
     let u = randomFloor(0, 2) / 2;
     let v = randomFloor(0, 3) / 3;
 

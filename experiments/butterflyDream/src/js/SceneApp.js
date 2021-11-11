@@ -144,6 +144,7 @@ class SceneApp extends Scene {
 
   present() {
     this._drawBufferflies.close(true);
+    this._touchScale.setTo(0.3);
 
     this._offsetOpen.setTo(0);
     this._hasPresented = true;
