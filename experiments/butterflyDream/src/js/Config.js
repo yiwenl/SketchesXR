@@ -1,7 +1,7 @@
 // Config.js
 
 export default {
-  colorIndex: 0,
+  colorIndex: 4,
   numParticles: 4,
   meshDetail: 6,
   numSwarm: 64,
