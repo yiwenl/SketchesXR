@@ -7,18 +7,18 @@ import {
   DrawCopy,
   Scene,
   EaseNumber,
-  FrameBuffer,
 } from "alfrid";
+import Config from "./Config";
+import resize from "./utils/resize";
 
 import { isARSupported, setCamera, hitTest } from "./ARUtils";
 import { mat4 } from "gl-matrix";
 import DrawMark from "./DrawMark";
 import TouchScale from "./utils/TouchScale";
+import { targetWidth, targetHeight } from "./features";
 
 import vs from "shaders/basic.vert";
 import fs from "shaders/diffuse.frag";
-import fsCompose from "shaders/compose.frag";
-import { ShaderLibs } from "./alfrid/shader";
 
 let hasSaved = false;
 let canSave = false;
@@ -62,9 +62,9 @@ class SceneApp extends Scene {
 
   _initTextures() {
     this.resize();
-
-    this._fboCamera = new FrameBuffer(GL.width, GL.height);
-    this._fboComposed = new FrameBuffer(GL.width, GL.height);
+    if (Config.autoSave) {
+      resize(GL.canvas, targetWidth, targetHeight);
+    }
   }
 
   _initViews() {
@@ -74,14 +74,6 @@ class SceneApp extends Scene {
     this._dMark = new DrawMark();
     const s = 0.1;
     this._drawCube = new Draw().setMesh(Geom.cube(s, s, s)).useProgram(vs, fs);
-
-    // const mesh = Geom.cube(1, 1, 1);
-    const mesh = Geom.cylinder(24);
-    this._draw = new Draw().setMesh(mesh).useProgram(vs, fs);
-
-    this._drawCompose = new Draw()
-      .setMesh(Geom.bigTriangle())
-      .useProgram(ShaderLibs.bigTriangleVert, fsCompose);
   }
 
   _onTouch = () => {
@@ -132,7 +124,11 @@ class SceneApp extends Scene {
 
   resize() {
     const { innerWidth, innerHeight } = window;
-    GL.setSize(innerWidth, innerHeight);
+    if (Config.autoSave) {
+      GL.setSize(targetWidth, targetHeight);
+    } else {
+      GL.setSize(innerWidth, innerHeight);
+    }
     this.camera.setAspectRatio(GL.aspectRatio);
   }
 }
