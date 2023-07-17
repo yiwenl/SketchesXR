@@ -13,6 +13,7 @@ class Scene {
     this.orbitalControl = new OrbitalControl(this.camera, 15, window);
     this.orbitalControl.radius.value = 10;
     this._isRunning = true;
+    this.resize();
 
     this._initTextures();
     this._initViews();

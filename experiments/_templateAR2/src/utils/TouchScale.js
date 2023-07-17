@@ -1,4 +1,4 @@
-import { vec2 } from "gl-matrix";
+import { vec2, mat4 } from "gl-matrix";
 import { EaseNumber } from "alfrid";
 
 const getTouchPos = (e, i) => {
@@ -9,6 +9,8 @@ class TouchScale {
   constructor(mScale = 1) {
     this._isScaling = false;
     this._scale = new EaseNumber(mScale);
+    this.limit(0.01, 100);
+    this._mtx = mat4.create();
 
     this._initDistance = 0;
     this._initScale = 1;
@@ -48,8 +50,22 @@ class TouchScale {
 
   _onTouchEnd() {}
 
+  limit(mMin, mMax) {
+    this._scale.limit(mMin, mMax);
+  }
+
   get value() {
     return this._scale.value;
+  }
+
+  get matrix() {
+    mat4.identity(this._mtx);
+    mat4.scale(this._mtx, this._mtx, [
+      this._scale.value,
+      this._scale.value,
+      this._scale.value,
+    ]);
+    return this._mtx;
   }
 }
 

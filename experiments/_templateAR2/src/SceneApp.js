@@ -1,18 +1,14 @@
-import {
-  GL,
-  DrawBall,
-  DrawAxis,
-  DrawCopy,
-  Scene,
-  EaseNumber,
-  FrameBuffer,
-} from "alfrid";
-
+import { GL, DrawBall, DrawAxis, DrawCopy, Scene, EaseNumber } from "alfrid";
 import { isARSupported, setCamera, hitTest } from "./ARUtils";
 import { mat4 } from "gl-matrix";
+import Scheduler from "scheduling";
 import DrawMark from "./DrawMark";
 
 import { updateCameraTexture, getCameraTexture } from "./utils/cameraTexture";
+import TouchScale from "./utils/TouchScale";
+
+// Example code
+import DrawBlocks from "./DrawBlocks";
 
 class SceneApp extends Scene {
   constructor() {
@@ -29,6 +25,8 @@ class SceneApp extends Scene {
     const s = 0.05;
     mat4.translate(this.mtxAR, this.mtxAR, [0, 0.2, 0]);
     mat4.scale(this.mtxAR, this.mtxAR, [s, s, s]);
+    this.touchScale = new TouchScale();
+    this.touchScale.limit(0.1, 5);
 
     // states
     this._offsetHit = new EaseNumber(0);
@@ -44,18 +42,15 @@ class SceneApp extends Scene {
     this._hasPresented = true;
   }
 
-  _initTextures() {
-    this.resize();
-
-    this._fboCamera = new FrameBuffer(GL.width, GL.height);
-    this._fboComposed = new FrameBuffer(GL.width, GL.height);
-  }
+  _initTextures() {}
 
   _initViews() {
     this._dAxis = new DrawAxis();
     this._dCopy = new DrawCopy();
     this._dBall = new DrawBall();
     this._dMark = new DrawMark();
+
+    this._drawBlocks = new DrawBlocks();
   }
 
   _onTouch = () => {
@@ -94,7 +89,8 @@ class SceneApp extends Scene {
     }
 
     if (this._hasPresented) {
-      mat4.mul(this.mtxModel, this.mtxHit, this.mtxAR);
+      mat4.mul(this.mtxModel, this.mtxAR, this.touchScale.matrix);
+      mat4.mul(this.mtxModel, this.mtxHit, this.mtxModel);
     } else {
       mat4.identity(this.mtxModel, this.mtxModel);
     }
@@ -107,10 +103,13 @@ class SceneApp extends Scene {
 
     GL.setModelMatrix(this.mtxModel);
     // draw world
+    this._drawBlocks.uniform("uTime", Scheduler.getElapsedTime()).draw();
 
-    s = 500;
-    GL.viewport(0, 0, s, s / GL.aspectRatio);
-    this._dCopy.draw(getCameraTexture());
+    if (isARSupported) {
+      s = 500;
+      GL.viewport(0, 0, s, s / GL.aspectRatio);
+      this._dCopy.draw(getCameraTexture());
+    }
 
     GL.enable(GL.DEPTH_TEST);
   }
