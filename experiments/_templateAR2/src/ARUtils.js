@@ -1,6 +1,5 @@
 import Scheduler from "scheduling";
 import { mat4 } from "gl-matrix";
-import { createCanvas } from "./utils/setupProject2D";
 
 let isARSupported = false;
 
@@ -16,16 +15,10 @@ let xrHitTestSource;
 let frame;
 let cbSessionEnd;
 let binding;
-let cameraTexture;
-let fboCamera;
-let dCopy;
-let depthInfo;
-let depthImageSource;
-let ctxDepthSource;
-let depthImage;
-let ctxDepth;
-
 let mtxHit = mat4.create();
+
+// camera texture
+let cameraTexture;
 
 const checkSupported = function checkSupported() {
   return new Promise((resolve, reject) => {
@@ -73,16 +66,7 @@ const init = function (mGl) {
       .requestSession("immersive-ar", {
         optionalFeatures: ["dom-overlay"],
         domOverlay: { root: document.querySelector(".container") },
-        requiredFeatures: [
-          "depth-sensing",
-          "local",
-          "hit-test",
-          "camera-access",
-        ],
-        depthSensing: {
-          usagePreference: ["cpu-optimized"],
-          dataFormatPreference: ["luminance-alpha"],
-        },
+        requiredFeatures: ["local", "hit-test", "camera-access"],
       })
       .then(makeXRCompatible)
       .then(initHitTesting)
@@ -118,50 +102,8 @@ function bind() {
   gl.bindFramebuffer(gl.FRAMEBUFFER, session.renderState.baseLayer.framebuffer);
 }
 
-const upateDepthImage = (mDepthInfo) => {
-  const { width, height, data, rawValueToMeters } = mDepthInfo;
-  if (!depthImage) {
-    const oDepthSource = createCanvas(width, height);
-    const oDepth = createCanvas(height, width);
-    depthImageSource = oDepthSource.canvas;
-    ctxDepthSource = oDepthSource.ctx;
-
-    depthImage = oDepth.canvas;
-    ctxDepth = oDepth.ctx;
-  }
-
-  const numArr = [];
-  const dataArr = new Uint16Array(data);
-  for (let i = 0; i < width * height; i++) {
-    numArr.push(dataArr[i] * rawValueToMeters);
-  }
-
-  const depthLimit = 1.0;
-  const colorArray = numArr
-    .map((val) => {
-      if (val <= 0) {
-        return [0, 0, 0, 1];
-      } else {
-        const g = 1 - val / depthLimit;
-        return [g, g, g, 1];
-      }
-    })
-    .flat()
-    .map((val) => val * 255.0);
-
-  const colorBuffer = new Uint8ClampedArray(colorArray);
-  const imageData = new ImageData(colorBuffer, width);
-  ctxDepthSource.putImageData(imageData, 0, 0);
-
-  ctxDepth.save();
-  ctxDepth.translate(height, 0);
-  ctxDepth.rotate(Math.PI * 0.5);
-  ctxDepth.drawImage(depthImageSource, 0, 0);
-  ctxDepth.restore();
-};
-
-function getDepthImage() {
-  return depthImage;
+function unbind() {
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 }
 
 // set the camera from XRFrame.pose
@@ -186,11 +128,6 @@ function setCamera(GL, mCamera, mBind = true) {
 
     // get camera texture
     cameraTexture = binding.getCameraImage(view.camera);
-
-    // depth sensing
-    depthInfo = frame.getDepthInformation(view);
-    if (depthInfo) upateDepthImage(depthInfo);
-
     GL.setMatrices(mCamera);
     GL.viewport(x, y, width, height);
 
@@ -234,8 +171,8 @@ export {
   init,
   setCamera,
   bind,
+  unbind,
   hitTest,
   onSessionEnd,
   getCameraTexture,
-  getDepthImage,
 };

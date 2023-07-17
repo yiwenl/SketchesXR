@@ -1,36 +1,27 @@
 import {
   GL,
-  Draw,
   Geom,
   DrawBall,
   DrawAxis,
   DrawCopy,
   Scene,
   EaseNumber,
-  GLTexture,
   GLShader,
   FrameBuffer,
 } from "alfrid";
 
 import {
+  bind,
+  unbind,
   isARSupported,
   setCamera,
   hitTest,
   getCameraTexture,
-  getDepthImage,
 } from "./ARUtils";
 import { mat4 } from "gl-matrix";
 import DrawMark from "./DrawMark";
 
-import { createCanvas } from "./utils/setupProject2D";
-
-import vs from "shaders/basic.vert";
-import fs from "shaders/diffuse.frag";
-import fsCompose from "shaders/compose.frag";
 import { ShaderLibs } from "./alfrid/shader";
-
-let hasSaved = false;
-let canSave = false;
 
 class SceneApp extends Scene {
   constructor() {
@@ -53,10 +44,6 @@ class SceneApp extends Scene {
     this._offsetOpen = new EaseNumber(1);
     this._hasStarted = false;
     this._hasPresented = false;
-
-    setTimeout(() => {
-      canSave = true;
-    }, 500);
   }
 
   present() {
@@ -78,14 +65,6 @@ class SceneApp extends Scene {
     this._dCopy = new DrawCopy();
     this._dBall = new DrawBall();
     this._dMark = new DrawMark();
-
-    // const mesh = Geom.cube(1, 1, 1);
-    const mesh = Geom.cylinder(24);
-    this._draw = new Draw().setMesh(mesh).useProgram(vs, fs);
-
-    this._drawCompose = new Draw()
-      .setMesh(Geom.bigTriangle())
-      .useProgram(ShaderLibs.bigTriangleVert, fsCompose);
   }
 
   _onTouch = () => {
@@ -128,37 +107,15 @@ class SceneApp extends Scene {
 
       this.shaderCopy.bind();
       gl.activeTexture(gl.TEXTURE0);
-      // gl.bindTexture(gl.TEXTURE_2D, this.camTexture);
       const uniformLoc = gl.getUniformLocation(
         this.shaderCopy.shaderProgram,
         "texture"
       );
       gl.uniform1i(uniformLoc, 0);
-      // console.log("uniformLoc", uniformLoc);
       this.shaderCopy.uniform("texture", "int", 0);
       GL.draw(this.meshTri);
       this._fboCamera.unbind();
     }
-
-    const depthImage = getDepthImage();
-    if (depthImage) {
-      if (!this.cameraDepth) {
-        this.cameraDepth = new GLTexture(depthImage);
-        this.cameraDepth.bind(0);
-      } else {
-        this.cameraDepth.updateTexture(depthImage);
-      }
-    }
-
-    // this._fboComposed.bind();
-    // GL.clear(0, 0, 0, 0);
-    // if (this.camTexture && this.cameraDepth) {
-    //   this._drawCompose
-    //     .bindTexture("uColorMap", this._fboCamera.texture, 0)
-    //     .bindTexture("uDepthMap", this.cameraDepth, 1)
-    //     .draw();
-    // }
-    // this._fboComposed.unbind();
   }
 
   render() {
@@ -182,40 +139,16 @@ class SceneApp extends Scene {
     this._dAxis.draw();
     this._dMark.uniform("uOffset", this._offsetHit.value).draw();
 
-    GL.disable(GL.DEPTH_TEST);
-    // if (this.camTexture) {
-    // this._dCopy.draw(this._fboComposed.texture);
+    GL.setModelMatrix(this.mtxModel);
+    // draw world
 
-    if (this.camTexture && this.cameraDepth) {
-      this._drawCompose
-        .bindTexture("uColorMap", this._fboCamera.texture, 0)
-        .bindTexture("uDepthMap", this.cameraDepth, 1)
-        .draw();
+    if (this.camTexture) {
+      s = 500;
+      GL.viewport(0, 0, s, s / GL.aspectRatio);
+      this._dCopy.draw(this._fboCamera.getTexture());
     }
 
-    // s = 400;
-    // if (this.camTexture) {
-    //   GL.viewport(0, 0, s, s / GL.aspectRatio);
-    //   this._dCopy.draw(this._fboCamera.texture);
-    // }
-
-    // if (this.cameraDepth) {
-    //   GL.viewport(
-    //     s,
-    //     0,
-    //     s,
-    //     s / (this.cameraDepth.width / this.cameraDepth.height)
-    //   );
-    //   this._dCopy.draw(this.cameraDepth);
-    // }
-
     GL.enable(GL.DEPTH_TEST);
-  }
-
-  resize() {
-    const { innerWidth, innerHeight } = window;
-    GL.setSize(innerWidth, innerHeight);
-    this.camera.setAspectRatio(GL.aspectRatio);
   }
 }
 
