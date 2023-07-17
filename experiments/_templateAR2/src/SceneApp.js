@@ -3,6 +3,7 @@ import { isARSupported, setCamera, hitTest } from "./ARUtils";
 import { mat4 } from "gl-matrix";
 import Scheduler from "scheduling";
 import DrawMark from "./DrawMark";
+import DrawEnv from "./DrawEnv";
 
 import { updateCameraTexture, getCameraTexture } from "./utils/cameraTexture";
 import TouchScale from "./utils/TouchScale";
@@ -49,6 +50,7 @@ class SceneApp extends Scene {
     this._dCopy = new DrawCopy();
     this._dBall = new DrawBall();
     this._dMark = new DrawMark();
+    this._dEnv = new DrawEnv();
 
     this._drawBlocks = new DrawBlocks();
   }
@@ -76,7 +78,7 @@ class SceneApp extends Scene {
   }
 
   update() {
-    updateCameraTexture();
+    if (this._hasPresented) updateCameraTexture();
   }
 
   render() {
@@ -95,6 +97,13 @@ class SceneApp extends Scene {
       mat4.identity(this.mtxModel, this.mtxModel);
     }
 
+    // if (!this._hasPresented || !isARSupported) {
+    if (!this._hasPresented) {
+      GL.disable(GL.DEPTH_TEST);
+      this._dEnv.draw();
+      GL.enable(GL.DEPTH_TEST);
+    }
+
     GL.setModelMatrix(this.mtxHit);
     s = this._offsetHit.value * 0.005;
     this._dBall.draw([0, 0, 0], [s, s, s], [1, 1, 1]);
@@ -105,7 +114,7 @@ class SceneApp extends Scene {
     // draw world
     this._drawBlocks.uniform("uTime", Scheduler.getElapsedTime()).draw();
 
-    if (isARSupported) {
+    if (isARSupported && this._hasPresented) {
       s = 500;
       GL.viewport(0, 0, s, s / GL.aspectRatio);
       this._dCopy.draw(getCameraTexture());
