@@ -1,27 +1,18 @@
 import {
   GL,
-  Geom,
   DrawBall,
   DrawAxis,
   DrawCopy,
   Scene,
   EaseNumber,
-  GLShader,
   FrameBuffer,
 } from "alfrid";
 
-import {
-  bind,
-  unbind,
-  isARSupported,
-  setCamera,
-  hitTest,
-  getCameraTexture,
-} from "./ARUtils";
+import { isARSupported, setCamera, hitTest } from "./ARUtils";
 import { mat4 } from "gl-matrix";
 import DrawMark from "./DrawMark";
 
-import { ShaderLibs } from "./alfrid/shader";
+import { updateCameraTexture, getCameraTexture } from "./utils/cameraTexture";
 
 class SceneApp extends Scene {
   constructor() {
@@ -90,32 +81,7 @@ class SceneApp extends Scene {
   }
 
   update() {
-    this.camTexture = getCameraTexture();
-
-    if (!this.meshTri) {
-      this.meshTri = Geom.bigTriangle();
-      this.shaderCopy = new GLShader(
-        ShaderLibs.bigTriangleVert,
-        ShaderLibs.copyFrag
-      );
-    }
-
-    if (this.camTexture) {
-      const { gl } = GL;
-      this._fboCamera.bind();
-      GL.clear(0, 0, 0, 1);
-
-      this.shaderCopy.bind();
-      gl.activeTexture(gl.TEXTURE0);
-      const uniformLoc = gl.getUniformLocation(
-        this.shaderCopy.shaderProgram,
-        "texture"
-      );
-      gl.uniform1i(uniformLoc, 0);
-      this.shaderCopy.uniform("texture", "int", 0);
-      GL.draw(this.meshTri);
-      this._fboCamera.unbind();
-    }
+    updateCameraTexture();
   }
 
   render() {
@@ -142,11 +108,9 @@ class SceneApp extends Scene {
     GL.setModelMatrix(this.mtxModel);
     // draw world
 
-    if (this.camTexture) {
-      s = 500;
-      GL.viewport(0, 0, s, s / GL.aspectRatio);
-      this._dCopy.draw(this._fboCamera.getTexture());
-    }
+    s = 500;
+    GL.viewport(0, 0, s, s / GL.aspectRatio);
+    this._dCopy.draw(getCameraTexture());
 
     GL.enable(GL.DEPTH_TEST);
   }

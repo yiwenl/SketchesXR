@@ -158,7 +158,7 @@ function onSessionEnd(mCb) {
   cbSessionEnd = mCb;
 }
 
-function getCameraTexture() {
+function getCamera() {
   return cameraTexture;
 }
 
@@ -174,5 +174,5 @@ export {
   unbind,
   hitTest,
   onSessionEnd,
-  getCameraTexture,
+  getCamera,
 };
