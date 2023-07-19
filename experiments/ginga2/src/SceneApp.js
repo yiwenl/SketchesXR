@@ -52,13 +52,19 @@ class SceneApp extends Scene {
 
     // states
     this._offsetHit = new EaseNumber(0);
-    this._offsetOpen = new EaseNumber(1);
+    this._offsetOpen = new EaseNumber(0, 0.02);
     this._hasStarted = false;
     this._hasPresented = false;
 
     // shadow
     this.lightPos = [0, 5, 1];
     this.cameraLight = new CameraOrtho();
+
+    if (!isARSupported) {
+      setTimeout(() => {
+        this._offsetOpen.value = 1;
+      }, 1000);
+    }
   }
 
   present() {
@@ -157,6 +163,7 @@ class SceneApp extends Scene {
     this._drawBlocks
       .bindTexture("uPatternMap", this.texturePattern, 0)
       .uniform("uTime", Scheduler.getElapsedTime())
+      .uniform("uOffset", this._offsetOpen.value)
       .uniform("uRenderMode", 2)
       .draw();
     gl.blendEquation(GL.FUNC_ADD);
@@ -246,9 +253,6 @@ class SceneApp extends Scene {
       GL.enable(GL.DEPTH_TEST);
     }
 
-    GL.setModelMatrix(this.mtxIdentity);
-    this._dCamera.draw(this.cameraLight);
-
     GL.setModelMatrix(this.mtxHit);
     s = this._offsetHit.value * 0.005;
     this._dBall.draw([0, 0, 0], [s, s, s], [1, 1, 1]);
@@ -263,12 +267,10 @@ class SceneApp extends Scene {
         : this._fboBg.getTexture();
 
     if (this._hasStarted || !isARSupported) {
-      if (isARSupported) {
-        this._drawDistort
-          .bindTexture("uEnvMap", getCameraTexture(), 0)
-          .bindTexture("uNormalMap", this._fboNormal.read.getTexture(), 1)
-          .draw();
-      }
+      this._drawDistort
+        .bindTexture("uEnvMap", envMap, 0)
+        .bindTexture("uNormalMap", this._fboNormal.read.getTexture(), 1)
+        .draw();
 
       // draw layers
       this.patternMaps.forEach(({ texture }, i) => {
@@ -282,9 +284,9 @@ class SceneApp extends Scene {
     }
 
     if (this._hasPresented) {
-      s = GL.width / 2;
+      s = 1;
       GL.viewport(0, 0, s, s / GL.aspectRatio);
-      this._dCopy.draw(getCameraTexture());
+      this._dCopy.draw(this._fboNormal.read.texture);
     }
     // this._dCopy.draw(this._fboShadow.depthTexture);
     GL.enable(GL.DEPTH_TEST);

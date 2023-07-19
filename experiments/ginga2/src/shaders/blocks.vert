@@ -13,6 +13,7 @@ uniform mat4 uModelMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
 uniform float uTime;
+uniform float uOffset;
 
 varying vec2 vTextureCoord;
 varying vec3 vNormal;
@@ -23,8 +24,11 @@ varying vec2 vScale;
 #pragma glslify: rotate    = require(./glsl-utils/rotate.glsl)
 
 void main(void) {
+
+    float offset = clamp(uOffset * 2.0 - aColor.z, 0.0, 1.0);
+
     float theta = uTime * mix(0.5, 4.0, aColor.y) * 0.05 + aColor.z;
-    vec3 pos = aVertexPosition;
+    vec3 pos = aVertexPosition * offset;
 
     float scale = aExtra.x;
     float scaleZ = aPosOffset.z;
