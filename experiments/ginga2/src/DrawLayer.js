@@ -1,7 +1,8 @@
 import { Draw, Geom, ShaderLibs } from "alfrid";
-import fs from "shaders/distort.frag";
 
-export default class DrawDistort extends Draw {
+import fs from "shaders/layer.frag";
+
+export default class DrawLayer extends Draw {
   constructor() {
     super()
       .setMesh(Geom.bigTriangle())

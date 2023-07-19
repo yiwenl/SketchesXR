@@ -8,19 +8,24 @@ import {
   FrameBuffer,
   FboPingPong,
 } from "alfrid";
-import { isARSupported, setCamera, hitTest } from "./ARUtils";
+import { isARSupported, setCamera, hitTest, unbind } from "./ARUtils";
 import { mat4 } from "gl-matrix";
 import Scheduler from "scheduling";
 import DrawMark from "./DrawMark";
 import DrawEnv from "./DrawEnv";
 
 import { updateCameraTexture, getCameraTexture } from "./utils/cameraTexture";
+import { randomInt } from "./utils";
 import TouchScale from "./utils/TouchScale";
 import applyBlur from "./utils/applyBlur";
 import DrawDistort from "./DrawDistort";
+import DrawLayer from "./DrawLayer";
 
 // pattern
 import { generatePattern } from "./patterns";
+
+// outline
+import generateOutline from "./generateOutlineMap";
 
 // Example code
 import DrawBlocks from "./DrawBlocks";
@@ -57,15 +62,29 @@ class SceneApp extends Scene {
   }
 
   _initTextures() {
+    const { width, height } = GL;
     const size = 2048;
     const color0 = [32, 32, 28];
     const color1 = [255, 255, 245];
-    let s = 2;
+    let s = 1.5;
+
+    this.patterns = [];
+    this.patternMaps = [];
+    let num = 10;
+    while (num--) {
+      const t = generatePattern(size, size, randomInt(1, 3), color0, color1);
+      this.patterns.push(t);
+      const fbo = new FrameBuffer(width * s, height * s);
+      this.patternMaps.push(fbo);
+    }
     this.texturePattern = generatePattern(size, size, 1, color0, color1);
 
-    const { width, height } = GL;
-    this._fboBg = new FrameBuffer(width, height);
-    this._fboNormal = new FboPingPong(GL.width, GL.height);
+    this._fboMap = new FrameBuffer(width * s, height * s, { type: GL.FLOAT });
+    this._fboXOR = new FrameBuffer(width * s, height * s);
+    this._fboOutline = new FrameBuffer(width * s, height * s);
+    this._fboBg = new FrameBuffer(width * s, height * s);
+    this._fboNormal = new FboPingPong(width * s, height * s);
+    this._fboNormalSave = new FrameBuffer(width * s, height * s);
   }
 
   _initViews() {
@@ -77,6 +96,7 @@ class SceneApp extends Scene {
 
     this._drawBlocks = new DrawBlocks();
     this._drawDistort = new DrawDistort();
+    this._drawLayer = new DrawLayer();
   }
 
   _onTouch = () => {
@@ -102,29 +122,78 @@ class SceneApp extends Scene {
   }
 
   update() {
+    if (isARSupported && this._hasPresented) {
+      setCamera(GL, this.camera, true);
+    }
     if (this._hasPresented) updateCameraTexture();
 
     if (isARSupported && this._hasPresented) {
-      setCamera(GL, this.camera);
+      // unbind();
     }
 
+    GL.setModelMatrix(this.mtxModel);
+    const { gl } = GL;
+
+    // background
     this._fboBg.bind();
     GL.clear(0, 0, 0, 1);
     this._dEnv.draw();
     this._fboBg.unbind();
 
+    // xor
+    this._fboXOR.bind();
+    GL.clear(1, 1, 1, 1);
+    gl.blendEquation(GL.FUNC_SUBTRACT);
+    gl.blendFunc(GL.ONE, GL.DST_COLOR);
+    this._drawBlocks
+      .bindTexture("uPatternMap", this.texturePattern, 0)
+      .uniform("uTime", Scheduler.getElapsedTime())
+      .uniform("uRenderMode", 2)
+      .draw();
+    gl.blendEquation(GL.FUNC_ADD);
+    this._fboXOR.unbind();
+
+    // generate outline
+    generateOutline(this._fboOutline, this._fboXOR.texture);
+
+    // map
+    GL.enableAdditiveBlending();
+    this._fboMap.bind();
+    GL.clear(0, 0, 0, 0);
+    this._drawBlocks
+      .bindTexture("uPatternMap", this.texturePattern, 0)
+      .uniform("uRenderMode", 3)
+      .draw();
+    this._fboMap.unbind();
+
     // normal
+    GL.enableAlphaBlending();
     GL.enable(GL.DEPTH_TEST);
     this._fboNormal.read.bind();
     GL.clear(0, 0, 0, 0);
     this._drawBlocks
       .bindTexture("uPatternMap", this.texturePattern, 0)
-      .uniform("uTime", Scheduler.getElapsedTime())
-      .uniform("uUseNormal", 1)
+      .uniform("uRenderMode", 1)
       .draw();
     this._fboNormal.read.unbind();
+    this._fboNormalSave.bind();
+    GL.clear(0, 0, 0, 0);
+    this._dCopy.draw(this._fboNormal.read.texture);
+    this._fboNormalSave.unbind();
 
     applyBlur(this._fboNormal);
+
+    // pattern maps
+    this.patterns.forEach((t, i) => {
+      const fbo = this.patternMaps[i];
+      fbo.bind();
+      GL.clear(0, 0, 0, 0);
+      this._drawBlocks
+        .bindTexture("uPatternMap", t, 0)
+        .uniform("uRenderMode", 0)
+        .draw();
+      fbo.unbind();
+    });
   }
 
   render() {
@@ -153,33 +222,36 @@ class SceneApp extends Scene {
     GL.setModelMatrix(this.mtxHit);
     s = this._offsetHit.value * 0.005;
     this._dBall.draw([0, 0, 0], [s, s, s], [1, 1, 1]);
-    this._dAxis.draw();
     this._dMark.uniform("uOffset", this._offsetHit.value).draw();
 
     GL.setModelMatrix(this.mtxModel);
-    // draw world
+    // draw background
     GL.disable(GL.DEPTH_TEST);
     const envMap =
       isARSupported && this._hasPresented
         ? getCameraTexture()
         : this._fboBg.getTexture();
-    this._drawDistort
-      .bindTexture("uEnvMap", envMap, 0)
-      .bindTexture("uNormalMap", this._fboNormal.read.getTexture(), 1)
-      .draw();
+
+    if (this._hasStarted || !isARSupported) {
+      if (!isARSupported) {
+        this._drawDistort
+          .bindTexture("uEnvMap", envMap, 0)
+          .bindTexture("uNormalMap", this._fboNormal.read.getTexture(), 1)
+          .draw();
+      }
+
+      // draw layers
+      this.patternMaps.forEach(({ texture }, i) => {
+        this._drawLayer.bindTexture(`uPatternMap${i}`, texture, i);
+      });
+      const l = this.patternMaps.length;
+      this._drawLayer
+        .bindTexture("uMap", this._fboMap.texture, l)
+        .bindTexture("uOutlineMap", this._fboOutline.texture, l + 1)
+        .draw();
+    }
 
     GL.enable(GL.DEPTH_TEST);
-    this._drawBlocks
-      .bindTexture("uPatternMap", this.texturePattern, 0)
-      .uniform("uTime", Scheduler.getElapsedTime())
-      .uniform("uUseNormal", 0)
-      .draw();
-
-    if (isARSupported && this._hasPresented) {
-      s = 500;
-      GL.viewport(0, 0, s, s / GL.aspectRatio);
-      this._dCopy.draw(getCameraTexture());
-    }
   }
 }
 

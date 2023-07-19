@@ -13,13 +13,19 @@ uniform sampler2D uNormalMap;
 void main(void) {
     vec4 normal = texture2D(uNormalMap, vTextureCoord);
     vec3 N = normalize(normal.rgb * 2.0 - 1.0);
+    float d = diffuse(N, LIGHT);
 
     vec2 uvShift = (N.rg) * normal.a * 0.2;
     vec2 uv = vTextureCoord + uvShift;
 
-    float d = diffuse(N, LIGHT);
-    d = pow(d, 3.0);
+    vec2 offset = vec2(d, 0.0) * 0.02;
 
-    gl_FragColor = texture2D(uEnvMap, uv);
-    gl_FragColor.rgb += d * .5;
+    float red = texture2D(uEnvMap, uv - offset).r; 
+    float green = texture2D(uEnvMap, uv).g;
+    float blue = texture2D(uEnvMap, uv + offset).b;
+
+    vec3 color = vec3(red, green, blue);
+
+    gl_FragColor = vec4(color, 1.0);
+    gl_FragColor.rgb += pow(d, 3.0) * .5;
 }

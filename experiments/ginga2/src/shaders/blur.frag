@@ -22,10 +22,17 @@ vec4 blur9(sampler2D image, vec2 uv, vec2 resolution, vec2 direction) {
 
 
 void main(void) {
-    vec2 uv = vTextureCoord - 0.5;
-    uv = uv * 0.98 + 0.5;
-    gl_FragColor = blur9(texture, uv, uResolution, uDirection);
-    if(gl_FragColor.a > 0.0) {
-        gl_FragColor.rgb /= gl_FragColor.a;
-    }
+	float expand = 0.01;
+	vec2 uv = vTextureCoord - 0.5;
+	uv = uv * (1.0 - expand) + 0.5;
+	vec4 color0 = blur9(texture, uv, uResolution, uDirection);
+
+	uv = vTextureCoord - 0.5;
+	uv = uv * (1.0 + expand) + 0.5;
+	vec4 color1 = blur9(texture, uv, uResolution, uDirection);
+	gl_FragColor = color0 + color1;
+
+	if(gl_FragColor.a > 0.0) {
+			gl_FragColor.rgb /= gl_FragColor.a;
+	}
 }

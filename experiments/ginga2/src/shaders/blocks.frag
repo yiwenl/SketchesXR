@@ -11,6 +11,14 @@ varying vec2 vScale;
 
 uniform sampler2D uPatternMap;
 uniform float uUseNormal;
+uniform float uUseXOR;
+uniform float uRenderMode;
+/*
+0 - pattern
+1 - normal 
+2 - xor
+3 - additive
+*/
 
 #define AxisZ vec3(0.0, 0.0, 1.0)
 #define AxisY vec3(0.0, 1.0, 0.0)
@@ -18,7 +26,7 @@ uniform float uUseNormal;
 #pragma glslify: rotate    = require(./glsl-utils/rotate.glsl)
 
 #pragma glslify: diffuse    = require(./glsl-utils/diffuse.glsl)
-#define LIGHT vec3(0.2, 1.0, -.2)
+#define LIGHT vec3(0.2, 1.0, 1.2)
 
 void main(void) {
 
@@ -40,10 +48,16 @@ void main(void) {
 
     float d = diffuse(LIGHT, vNormal, .5);
 
-    color.rgb *= d;
+    color.rgb *= d * 1.2;
 
-    gl_FragColor = color;
-    if(uUseNormal > 0.5 ) {
+    if(uRenderMode < 1.0) {
+        // color.rgb = pow(color.rgb, vec3(1.5));
+        gl_FragColor = color;
+    } else if(uRenderMode < 2.0) {
         gl_FragColor = vec4(vNormal * .5 + .5, 1.0);
+    } else if(uRenderMode < 3.0) {
+        gl_FragColor = vec4(1.0);
+    } else {
+        gl_FragColor = vec4(vColor, 1.0);
     }
 }

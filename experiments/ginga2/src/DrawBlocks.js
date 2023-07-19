@@ -15,10 +15,14 @@ export default class DrawBlocks extends Draw {
     const extras = [];
     const colors = [];
 
-    let num = 180;
+    let num = 500;
     while (num--) {
-      posOffsets.push([random(), random(Math.PI * 2), random(2, 8)]);
-      extras.push([random(0.05, 0.3), random(), random()]);
+      let r = random(1.5, 3);
+      if (random() < 0.1) {
+        r = random(2, 5);
+      }
+      posOffsets.push([r, random(Math.PI * 2), random(2, 8)]);
+      extras.push([random(0.01, 0.2), random() + 2, random()]);
       colors.push([1, random(), random()]);
     }
 
