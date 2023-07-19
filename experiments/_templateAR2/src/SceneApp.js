@@ -1,4 +1,12 @@
-import { GL, DrawBall, DrawAxis, DrawCopy, Scene, EaseNumber } from "alfrid";
+import {
+  GL,
+  GLTexture,
+  DrawBall,
+  DrawAxis,
+  DrawCopy,
+  Scene,
+  EaseNumber,
+} from "alfrid";
 import { isARSupported, setCamera, hitTest } from "./ARUtils";
 import { mat4 } from "gl-matrix";
 import Scheduler from "scheduling";

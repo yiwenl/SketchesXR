@@ -20,9 +20,9 @@ function FrameBuffer(mWidth, mHeight, mParameters = {}, mNumTargets = 1) {
    * @param {GL} mGL the GLTool instance
    * @param {boolean} mAutoSetViewport automatically set the viewport to framebuffer's viewport
    */
-  this.bind = function(mGL, mAutoSetViewport = true) {
+  this.bind = function (mGL, mAutoSetViewport = true) {
     if (mGL !== undefined && _GL !== undefined && mGL !== _GL) {
-      LogError(Errors.FRAMEBUFFER_CONTEXT, _GL.id);
+      LogError(Errors.FRAMEBUFFER_CONTEXT + ", " + _GL.id + ", " + mGL);
       return;
     }
 
@@ -48,7 +48,7 @@ function FrameBuffer(mWidth, mHeight, mParameters = {}, mNumTargets = 1) {
    *
    * @param {boolean} mAutoSetViewport automatically set the viewport back to GL's viewport
    */
-  this.unbind = function(mAutoSetViewport = true) {
+  this.unbind = function (mAutoSetViewport = true) {
     if (mAutoSetViewport) {
       _GL.viewport(0, 0, _GL.width, _GL.height);
     }
@@ -65,7 +65,7 @@ function FrameBuffer(mWidth, mHeight, mParameters = {}, mNumTargets = 1) {
    *
    * @param {number} mIndex the index of the texture
    */
-  this.getTexture = function(mIndex = 0) {
+  this.getTexture = function (mIndex = 0) {
     return _textures[mIndex];
   };
 
@@ -73,7 +73,7 @@ function FrameBuffer(mWidth, mHeight, mParameters = {}, mNumTargets = 1) {
    * Destroy the framebuffer
    *
    */
-  this.destroy = function() {
+  this.destroy = function () {
     const { gl } = _GL;
 
     // delete all textures
@@ -209,7 +209,7 @@ function FrameBuffer(mWidth, mHeight, mParameters = {}, mNumTargets = 1) {
    *
    * @returns {GLTexture} the texture
    */
-  this.__defineGetter__("texture", function() {
+  this.__defineGetter__("texture", function () {
     return _textures[0];
   });
 
@@ -218,7 +218,7 @@ function FrameBuffer(mWidth, mHeight, mParameters = {}, mNumTargets = 1) {
    *
    * @returns {GLTexture} the depth texture
    */
-  this.__defineGetter__("depthTexture", function() {
+  this.__defineGetter__("depthTexture", function () {
     return _depthTexture;
   });
 
@@ -227,7 +227,7 @@ function FrameBuffer(mWidth, mHeight, mParameters = {}, mNumTargets = 1) {
    *
    * @returns {number} the width
    */
-  this.__defineGetter__("width", function() {
+  this.__defineGetter__("width", function () {
     return _width;
   });
 
@@ -236,7 +236,7 @@ function FrameBuffer(mWidth, mHeight, mParameters = {}, mNumTargets = 1) {
    *
    * @returns {number} the height
    */
-  this.__defineGetter__("height", function() {
+  this.__defineGetter__("height", function () {
     return _height;
   });
 }
