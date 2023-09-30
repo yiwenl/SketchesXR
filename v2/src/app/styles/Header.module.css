@@ -4,6 +4,7 @@
   color: #ffffff;
   font-family: Arial ffffff;
   text-decoration: none;
+  z-index: 999;
 }
 
 .aboutIcon svg {
