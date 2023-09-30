@@ -1,8 +1,7 @@
-.main {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.main h1 {
-  text-align: center;
+.container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  overflow: scroll;
 }
