@@ -47,7 +47,7 @@ class SceneApp extends Scene {
     this.mtxAR = mat4.create();
     const s = 0.05;
     mat4.scale(this.mtxAR, this.mtxAR, [s, s, s]);
-    this.touchScale = new TouchScale();
+    this.touchScale = new TouchScale(1.25);
     this.touchScale.limit(0.1, 5);
 
     // states
@@ -162,7 +162,7 @@ class SceneApp extends Scene {
     gl.blendFunc(GL.ONE, GL.DST_COLOR);
     this._drawBlocks
       .bindTexture("uPatternMap", this.texturePattern, 0)
-      .uniform("uTime", Scheduler.getElapsedTime())
+      .uniform("uTime", Scheduler.getElapsedTime() * 2.0)
       .uniform("uOffset", this._offsetOpen.value)
       .uniform("uRenderMode", 2)
       .draw();
@@ -286,9 +286,8 @@ class SceneApp extends Scene {
     if (this._hasPresented) {
       s = 1;
       GL.viewport(0, 0, s, s / GL.aspectRatio);
-      this._dCopy.draw(this._fboNormal.read.texture);
+      this._dCopy.draw(getCameraTexture());
     }
-    // this._dCopy.draw(this._fboShadow.depthTexture);
     GL.enable(GL.DEPTH_TEST);
   }
 }
