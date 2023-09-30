@@ -45,11 +45,11 @@
 
   /* animation */
   transition: transform 0.25s ease-out, filter 0.25s ease-out;
-  filter: grayscale(60%);
+  filter: grayscale(100%);
 }
 
 .imageWrapper:hover {
-  transform: scale(0.95);
+  transform: scale(1.05);
   filter: grayscale(0%);
 }
 

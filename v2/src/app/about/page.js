@@ -16,10 +16,20 @@ export default function About() {
 
       <div className={styles.descContainer}>
         <p className="About-Desc">
-          A place for my sketches, most of them are not optimised so it take a
-          bit of time to load, please be patient. And apologies for some of the
-          sketches might not work across different devices and platforms. This
-          is more a playground for me to tryout ideas.
+          A place for my native WebXR sketches. Note currently these experiments
+          only works on android phones with webXR enabled browsers, iOS mobile
+          doesn't support native WebXR yet.
+          <br />
+          <br />
+          Most of them are not optimised so it might take a bit of time to load,
+          please be patient. The way it works are mostly similar : pointing the
+          camera to the floor, looking around to let the WebXR API to detect the
+          floor, then tap on the screen to start the experience.
+          <br />
+          <br />
+          And apologies for some of the sketches might not work across different
+          devices and platforms. This is more a playground for me to tryout
+          ideas.
         </p>
         <p>
           <br />
