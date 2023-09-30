@@ -3,6 +3,42 @@ import Link from "next/link";
 
 import SiteData from "../../model/data";
 
+export async function generateMetadata({ params }) {
+  const index = parseInt(params.id);
+  const { url, title, cover } = SiteData[index];
+
+  return {
+    title: `SketchesXR | ${title}`,
+    description: "WebXR Sketches by Yi-Wen Lin",
+    metadataBase: new URL("https://yiwenl.github.io/SketchesXR"),
+    openGraph: {
+      title: `SketchesXR | ${title}`,
+      type: "website",
+      description: "WebXR Sketches by Yi-Wen Lin",
+      url,
+      image: `https://yiwenl.github.io/SketchesXR/${cover}`,
+      images: [
+        {
+          url: `https://yiwenl.github.io/SketchesXR/${cover}`,
+        },
+      ],
+    },
+    twitter: {
+      card: "photo",
+      creator: "@yiwenl",
+      title: `SketchesXR | ${title}`,
+      description: "WebXR Sketches by Yi-Wen Lin",
+      url,
+      image: `https://yiwenl.github.io/SketchesXR/${cover}`,
+    },
+    viewport: {
+      width: "device-width",
+      initialScale: 1,
+      maximumScale: 1,
+    },
+  };
+}
+
 export default function ExperimentPage({ params }) {
   const index = parseInt(params.id);
   const { url } = SiteData[index];
