@@ -28,7 +28,7 @@ const ExperimentItem = ({ index, experiment: { cover, video, title } }) => {
             height: 280,
           }}
         >
-          <Image src={`/${cover}`} alt="" fill />
+          <Image src={`${basePath}/${cover}`} alt="" fill />
           {hovered && (
             <Image
               src={`/${video}`}
