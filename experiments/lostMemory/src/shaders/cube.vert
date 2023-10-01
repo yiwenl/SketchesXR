@@ -22,15 +22,13 @@ varying vec2 vUV;
 varying vec3 vNormal;
 
 void main(void) {
-    vec3 pos = aVertexPosition * uSize;
+    vec3 pos = aVertexPosition * uSize * mix(1.0, 1.05, uShadow);
 
     vec4 screenPos = uCameraMatrix * uModelInitMatrix * vec4(pos, 1.0);
     vUV = screenPos.xy / screenPos.w * .5 + .5;
 
-
     vec4 wsPos = uModelMatrix * vec4(pos, 1.0);
     if(uShadow > .5) {
-        wsPos.xyz *= 1.1;
         wsPos.y *= 0.0;
         wsPos.y += uLevel;
     }

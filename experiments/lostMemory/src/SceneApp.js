@@ -1,10 +1,14 @@
 import {
   GL,
+  Draw,
+  Geom,
+  ShaderLibs,
   DrawBall,
   DrawAxis,
   DrawCopy,
   Scene,
   FrameBuffer,
+  FboPingPong,
   EaseNumber,
 } from "alfrid";
 import { isARSupported, setCamera, hitTest } from "./ARUtils";
@@ -26,6 +30,11 @@ import * as CANNON from "cannon";
 
 // Example code
 import DrawCube from "./DrawCube";
+
+import fsBlur from "shaders/blur.frag";
+
+const MAX_NUM_CUBES = 20;
+const fboSize = 2048;
 
 class SceneApp extends Scene {
   constructor() {
@@ -121,6 +130,14 @@ class SceneApp extends Scene {
     this._textureLookup = Assets.get("lookup");
     this._textureLookup.minFilter = GL.NEAREST;
     this._textureLookup.magFilter = GL.NEAREST;
+
+    const oSettings = {
+      minFilter: GL.LINEAR,
+      magFilter: GL.LINEAR,
+    };
+
+    this._fboMap = new FrameBuffer(fboSize, fboSize, oSettings);
+    this._fboShadow = new FboPingPong(fboSize, fboSize, oSettings);
   }
 
   _initViews() {
@@ -134,6 +151,11 @@ class SceneApp extends Scene {
     this._drawBg = new DrawBg();
 
     this._drawCube = new DrawCube();
+    this._drawBlur = new Draw()
+      .setMesh(Geom.bigTriangle())
+      .useProgram(ShaderLibs.bigTriangleVert, fsBlur)
+      .setClearColor(0, 0, 0, 0)
+      .uniform("uResolution", [fboSize, fboSize]);
   }
 
   _onTouch = () => {
@@ -191,6 +213,11 @@ class SceneApp extends Scene {
     );
     this.world.addBody(cube.body);
     this._boxes.push(cube);
+
+    if (this._boxes.length > MAX_NUM_CUBES) {
+      const cube = this._boxes.shift();
+      this.world.removeBody(cube.body);
+    }
   };
 
   _checkHit() {
@@ -208,6 +235,51 @@ class SceneApp extends Scene {
     if (!isARSupported || !this._hasPresented) {
       GL.setModelMatrix(this.mtxModel);
       this._dEnv.draw();
+    }
+
+    if (this._hasPresented) {
+      setCamera(GL, this.camera);
+      this._checkHit();
+
+      mat4.mul(this.mtxModel, this.mtxAR, this.touchScale.matrix);
+      mat4.mul(this.mtxModel, this.mtxHit, this.mtxModel);
+
+      this.renderShadow();
+    }
+  }
+
+  renderShadow() {
+    this._fboMap.bind();
+    GL.clear(0, 0, 0, 0);
+    GL.disable(GL.DEPTH_TEST);
+    this._boxes.forEach((cube) => {
+      cube.renderFloor(this.groundLevel);
+    });
+
+    this._fboMap.unbind();
+
+    let map = this._fboMap.texture;
+    let num = 3;
+    while (num--) {
+      const mul = Math.pow(2, num + 1);
+      this._drawBlur
+        .bindFrameBuffer(this._fboShadow.write)
+        .uniform("uDirection", [0, 1])
+        .uniform("uResolution", [fboSize / mul, fboSize / mul])
+        .bindTexture("uMap", map, 0)
+        .draw();
+
+      this._fboShadow.swap();
+
+      this._drawBlur
+        .bindFrameBuffer(this._fboShadow.write)
+        .uniform("uDirection", [1, 0])
+        .uniform("uResolution", [fboSize / mul, fboSize / mul])
+        .bindTexture("uMap", this._fboShadow.read.texture, 0)
+        .draw();
+      this._fboShadow.swap();
+
+      map = this._fboShadow.read.texture;
     }
   }
 
@@ -246,6 +318,14 @@ class SceneApp extends Scene {
     this._dMark.uniform("uOffset", this._offsetHit.value).draw();
 
     GL.setModelMatrix(this.mtxModel);
+
+    // this._dCopy.draw(this._fboMap.texture);
+    if (this._hasPresented) {
+      GL.disable(GL.DEPTH_TEST);
+      this._dCopy.draw(this._fboShadow.read.texture);
+    }
+
+    GL.enable(GL.DEPTH_TEST);
     this._boxes.forEach((cube) => {
       cube.render(this.groundLevel);
     });

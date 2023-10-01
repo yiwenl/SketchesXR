@@ -1,4 +1,4 @@
-import { GL } from "alfrid";
+import { GL, EaseNumber } from "alfrid";
 import DrawCube from "./DrawCube";
 import { random } from "./utils";
 import * as CANNON from "cannon";
@@ -53,6 +53,34 @@ export default class Cube {
     mat4.mul(this.mtxInit, this.mtxInit, mtxRot);
 
     this._textureLookup = Assets.get("lookup");
+
+    this._shadowStrength = new EaseNumber(0, 0.05);
+    this._shadowStrength.value = 1;
+  }
+
+  renderFloor(mFloorLevel) {
+    const { position, quaternion } = this.body;
+    mat4.identity(this.mtx);
+    mat4.translate(this.mtx, this.mtx, getPos(position));
+    mat4.fromQuat(mtxRot, getQuat(quaternion));
+    mat4.mul(this.mtx, this.mtx, mtxRot);
+
+    const { halfExtents } = this.body.shapes[0];
+    const size = halfExtents.x * 2;
+
+    GL.setModelMatrix(this.mtx);
+
+    drawCube
+      .uniform("uBackSide", 0)
+      .uniform("uSize", size)
+      .uniform("uCameraMatrix", this.mtxCam)
+      .uniform("uModelInitMatrix", this.mtxInit)
+      .uniform("uShadow", 1)
+      .uniform("uLevel", mFloorLevel)
+      .bindTexture("uMap", this.texture, 0)
+      .bindTexture("uLookupMap", this._textureLookup, 1)
+      .uniform("uShadowStrength", this._shadowStrength.value)
+      .draw();
   }
 
   render(mFloorLevel) {
@@ -77,8 +105,6 @@ export default class Cube {
       .bindTexture("uMap", this.texture, 0)
       .bindTexture("uLookupMap", this._textureLookup, 1)
       .draw();
-
-    drawCube.uniform("uShadow", 1).draw();
 
     GL.cullFace(GL.FRONT);
     GL.setModelMatrix(this.mtxInit);

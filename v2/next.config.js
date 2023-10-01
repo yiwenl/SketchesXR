@@ -5,17 +5,15 @@ const isDev = process.env.NODE_ENV === "development";
 let assetPrefix = "";
 let basePath = "";
 
-if (!isDev) {
-  const repo = "SketchesXR";
-
-  assetPrefix = `/${repo}/`;
-  basePath = `/${repo}`;
+if (isDev) {
+  assetPrefix = `/SketchesXR/`;
+  basePath = `/SketchesXR`;
 }
 
 module.exports = {
   output: "export",
-  assetPrefix: assetPrefix,
-  basePath: basePath,
+  assetPrefix,
+  basePath,
   images: {
     unoptimized: true,
   },
