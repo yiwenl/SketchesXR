@@ -28,10 +28,10 @@ const ExperimentItem = ({ index, experiment: { cover, video, title } }) => {
             height: 280,
           }}
         >
-          <Image src={`${basePath}/${cover}`} alt="" fill />
+          <Image src={`/SketchesXR/${cover}`} alt="" fill />
           {hovered && (
             <Image
-              src={`/${video}`}
+              src={`/SketchesXR/${video}`}
               className={styles.videoContainer}
               alt={title}
               autoPlay

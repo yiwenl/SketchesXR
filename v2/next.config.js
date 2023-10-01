@@ -1,18 +1,13 @@
 // next.config.js
 
-const isDev = process.env.NODE_ENV === "development";
+// const isDev = process.env.NODE_ENV === "development";
 
-let assetPrefix = "";
-let basePath = "";
-
-if (isDev) {
-  assetPrefix = `/SketchesXR/`;
-  basePath = `/SketchesXR`;
-}
+// let assetPrefix = "";
+let basePath = `/SketchesXR`;
 
 module.exports = {
   output: "export",
-  assetPrefix,
+  // assetPrefix,
   basePath,
   images: {
     unoptimized: true,
