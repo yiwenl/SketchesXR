@@ -55,7 +55,7 @@ export default class Cube {
     this._textureLookup = Assets.get("lookup");
   }
 
-  render() {
+  render(mFloorLevel) {
     const { position, quaternion } = this.body;
     mat4.identity(this.mtx);
     mat4.translate(this.mtx, this.mtx, getPos(position));
@@ -72,9 +72,13 @@ export default class Cube {
       .uniform("uSize", size)
       .uniform("uCameraMatrix", this.mtxCam)
       .uniform("uModelInitMatrix", this.mtxInit)
+      .uniform("uShadow", 0)
+      .uniform("uLevel", mFloorLevel)
       .bindTexture("uMap", this.texture, 0)
       .bindTexture("uLookupMap", this._textureLookup, 1)
       .draw();
+
+    drawCube.uniform("uShadow", 1).draw();
 
     GL.cullFace(GL.FRONT);
     GL.setModelMatrix(this.mtxInit);

@@ -14,6 +14,8 @@ uniform mat4 uCameraMatrix;
 uniform mat4 uModelInitMatrix;
 
 uniform float uSize;
+uniform float uShadow;
+uniform float uLevel;
 
 varying vec2 vTextureCoord;
 varying vec2 vUV;
@@ -25,7 +27,15 @@ void main(void) {
     vec4 screenPos = uCameraMatrix * uModelInitMatrix * vec4(pos, 1.0);
     vUV = screenPos.xy / screenPos.w * .5 + .5;
 
-    gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(pos, 1.0);
+
+    vec4 wsPos = uModelMatrix * vec4(pos, 1.0);
+    if(uShadow > .5) {
+        wsPos.xyz *= 1.1;
+        wsPos.y *= 0.0;
+        wsPos.y += uLevel;
+    }
+
+    gl_Position = uProjectionMatrix * uViewMatrix * wsPos;
 
     vTextureCoord = aTextureCoord;
     vNormal = normalize(uNormalMatrix * aNormal);

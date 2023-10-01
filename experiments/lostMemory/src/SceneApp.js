@@ -89,7 +89,7 @@ class SceneApp extends Scene {
     });
     groundBody.position.y = -mtxInvert[13];
 
-    console.log("Ground level", groundBody.position.y);
+    this.groundLevel = groundBody.position.y;
 
     groundBody.quaternion.setFromAxisAngle(
       new CANNON.Vec3(1, 0, 0),
@@ -247,7 +247,7 @@ class SceneApp extends Scene {
 
     GL.setModelMatrix(this.mtxModel);
     this._boxes.forEach((cube) => {
-      cube.render(this.mtxModel);
+      cube.render(this.groundLevel);
     });
 
     if (isARSupported && this._hasPresented) {

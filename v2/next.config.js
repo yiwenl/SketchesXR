@@ -1,13 +1,12 @@
 // next.config.js
 
-const isGithubActions = process.env.GITHUB_ACTIONS || false;
+const isDev = process.env.NODE_ENV === "development";
 
 let assetPrefix = "";
 let basePath = "";
 
-if (isGithubActions) {
-  // trim off `<owner>/`
-  const repo = process.env.GITHUB_REPOSITORY.replace(/.*?\//, "");
+if (!isDev) {
+  const repo = "SketchesXR";
 
   assetPrefix = `/${repo}/`;
   basePath = `/${repo}`;
