@@ -35,4 +35,10 @@ export default [
     url: "//yiwenl.github.io/SketchesXR/experiments/tunnel/dist/index.html",
     title: "Tunnel",
   },
+  {
+    cover: "assets/img/coverMoon.jpg",
+    video: "assets/img/moon.gif",
+    url: "//yiwenl.github.io/SketchesXR/experiments/moon/dist/index.html",
+    title: "Moon",
+  },
 ];

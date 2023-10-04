@@ -1,32 +1,32 @@
 {
   "pages": {
     "/_not-found": [
-      "static/chunks/webpack-7aabfd9eed0ac3ee.js",
+      "static/chunks/webpack-23151aafbe4b9454.js",
       "static/chunks/fd9d1056-2703617740f52551.js",
       "static/chunks/864-90f9d1b5c4a4164c.js",
       "static/chunks/main-app-3cd837999e0ad435.js",
       "static/chunks/app/_not-found-6eb42c5125b84abd.js"
     ],
     "/layout": [
-      "static/chunks/webpack-7aabfd9eed0ac3ee.js",
+      "static/chunks/webpack-23151aafbe4b9454.js",
       "static/chunks/fd9d1056-2703617740f52551.js",
       "static/chunks/864-90f9d1b5c4a4164c.js",
       "static/chunks/main-app-3cd837999e0ad435.js",
-      "static/css/3fcd737cd3c83d77.css",
-      "static/chunks/app/layout-8fa2acf3cb49da09.js"
+      "static/css/d8182d8d1ffbdc34.css",
+      "static/chunks/app/layout-ce79a69e5077eb86.js"
     ],
     "/page": [
-      "static/chunks/webpack-7aabfd9eed0ac3ee.js",
+      "static/chunks/webpack-23151aafbe4b9454.js",
       "static/chunks/fd9d1056-2703617740f52551.js",
       "static/chunks/864-90f9d1b5c4a4164c.js",
       "static/chunks/main-app-3cd837999e0ad435.js",
       "static/chunks/724-9f716cead9ae35fd.js",
       "static/chunks/20-6c2fe45821e15c80.js",
-      "static/css/8f1f13096833080b.css",
-      "static/chunks/app/page-25b5365b3a8188ba.js"
+      "static/css/128f1c477e287a41.css",
+      "static/chunks/app/page-6b4037aa1bf8a55d.js"
     ],
     "/about/page": [
-      "static/chunks/webpack-7aabfd9eed0ac3ee.js",
+      "static/chunks/webpack-23151aafbe4b9454.js",
       "static/chunks/fd9d1056-2703617740f52551.js",
       "static/chunks/864-90f9d1b5c4a4164c.js",
       "static/chunks/main-app-3cd837999e0ad435.js",
@@ -35,7 +35,7 @@
       "static/chunks/app/about/page-0d6504d88433139e.js"
     ],
     "/exps/[id]/page": [
-      "static/chunks/webpack-7aabfd9eed0ac3ee.js",
+      "static/chunks/webpack-23151aafbe4b9454.js",
       "static/chunks/fd9d1056-2703617740f52551.js",
       "static/chunks/864-90f9d1b5c4a4164c.js",
       "static/chunks/main-app-3cd837999e0ad435.js",
