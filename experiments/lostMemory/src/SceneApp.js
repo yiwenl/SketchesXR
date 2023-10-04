@@ -195,9 +195,9 @@ class SceneApp extends Scene {
     const camPos = vec3.clone(this.camera.position);
     const dir = vec3.clone(this.camera.direction);
 
-    vec3.scale(dir, dir, random(2, 1.5));
+    vec3.scale(dir, dir, random(2, 2.5));
 
-    const a = random(0.2, 0.1) * pick([-1, 1]);
+    const a = random(0.25, 0.2) * pick([-1, 1]);
     vec3.rotateY(dir, dir, [0, 0, 0], a);
     // vec3.rotateY(dir, dir, a);
 
