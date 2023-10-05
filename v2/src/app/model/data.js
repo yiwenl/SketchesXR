@@ -41,4 +41,10 @@ export default [
     url: "//yiwenl.github.io/SketchesXR/experiments/moon/dist/index.html",
     title: "Moon",
   },
+  {
+    cover: "assets/img/coverSwirl.jpg",
+    video: "assets/img/swirl.gif",
+    url: "//yiwenl.github.io/SketchesXR/experiments/swirl/dist/index.html",
+    title: "Swirl",
+  },
 ];

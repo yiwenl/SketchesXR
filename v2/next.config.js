@@ -1,9 +1,8 @@
 // next.config.js
 
 // const isDev = process.env.NODE_ENV === "development";
-
 // let assetPrefix = "";
-let basePath = `/SketchesXR`;
+let basePath = process.env.NODE_ENV === "development" ? "" : `/SketchesXR`;
 
 module.exports = {
   output: "export",
