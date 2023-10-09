@@ -70,9 +70,12 @@ class SceneApp extends Scene {
       this._initWorld();
 
       let num = 10;
+
       while (num--) {
-        this._addCube();
+        setTimeout(this._addCube, 1000 * (num + 1));
       }
+
+      // setInterval(this._addCube, 1000);
     }
   }
 
@@ -181,6 +184,7 @@ class SceneApp extends Scene {
   };
 
   _addCube = () => {
+    console.log("add Cube", GL.width, GL.height);
     // capture
     const fbo = new FrameBuffer(GL.width, GL.height);
     fbo.bind();
@@ -188,20 +192,28 @@ class SceneApp extends Scene {
     if (GL.isMobile) {
       this._dCopy.draw(getCameraTexture());
     } else {
-      this._dEnv.draw();
+      GL.clear(1, 0, 0, 1);
+      this._dCopy.draw(this._fboBg.texture);
     }
     fbo.unbind();
+
+    this._fboTest = fbo;
 
     const camPos = vec3.clone(this.camera.position);
     const dir = vec3.clone(this.camera.direction);
 
-    vec3.scale(dir, dir, random(3, 4));
+    if (GL.isMobile) {
+      vec3.scale(dir, dir, random(3, 4));
+    } else {
+      vec3.scale(dir, dir, random(-4, 4));
+    }
 
-    const a = random(0.25, 0.2) * pick([-1, 1]);
+    const a = random(0.1, 0.2) * pick([-1, 1]);
     vec3.rotateY(dir, dir, [0, 0, 0], a);
     // vec3.rotateY(dir, dir, a);
 
     vec3.add(camPos, camPos, dir);
+    camPos[1] += 0.5;
 
     const mtxCam = mat4.clone(this.camera.matrix);
     const r = 1;
@@ -244,6 +256,8 @@ class SceneApp extends Scene {
       mat4.mul(this.mtxModel, this.mtxAR, this.touchScale.matrix);
       mat4.mul(this.mtxModel, this.mtxHit, this.mtxModel);
 
+      this.renderShadow();
+    } else {
       this.renderShadow();
     }
   }
@@ -320,7 +334,7 @@ class SceneApp extends Scene {
     GL.setModelMatrix(this.mtxModel);
 
     // this._dCopy.draw(this._fboMap.texture);
-    if (this._hasPresented) {
+    if (this._hasPresented || 1) {
       GL.disable(GL.DEPTH_TEST);
       this._dCopy.draw(this._fboShadow.read.texture);
     }

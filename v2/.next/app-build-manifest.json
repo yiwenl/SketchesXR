@@ -1,14 +1,14 @@
 {
   "pages": {
     "/_not-found": [
-      "static/chunks/webpack-23151aafbe4b9454.js",
+      "static/chunks/webpack-be441701c1dc7f8c.js",
       "static/chunks/fd9d1056-2703617740f52551.js",
       "static/chunks/864-90f9d1b5c4a4164c.js",
       "static/chunks/main-app-3cd837999e0ad435.js",
       "static/chunks/app/_not-found-6eb42c5125b84abd.js"
     ],
     "/layout": [
-      "static/chunks/webpack-23151aafbe4b9454.js",
+      "static/chunks/webpack-be441701c1dc7f8c.js",
       "static/chunks/fd9d1056-2703617740f52551.js",
       "static/chunks/864-90f9d1b5c4a4164c.js",
       "static/chunks/main-app-3cd837999e0ad435.js",
@@ -16,26 +16,26 @@
       "static/chunks/app/layout-ce79a69e5077eb86.js"
     ],
     "/page": [
-      "static/chunks/webpack-23151aafbe4b9454.js",
+      "static/chunks/webpack-be441701c1dc7f8c.js",
       "static/chunks/fd9d1056-2703617740f52551.js",
       "static/chunks/864-90f9d1b5c4a4164c.js",
       "static/chunks/main-app-3cd837999e0ad435.js",
       "static/chunks/724-9f716cead9ae35fd.js",
       "static/chunks/20-6c2fe45821e15c80.js",
       "static/css/128f1c477e287a41.css",
-      "static/chunks/app/page-d2dbe1e22c092e4b.js"
+      "static/chunks/app/page-01b54bc9dd01a60f.js"
     ],
     "/about/page": [
-      "static/chunks/webpack-23151aafbe4b9454.js",
+      "static/chunks/webpack-be441701c1dc7f8c.js",
       "static/chunks/fd9d1056-2703617740f52551.js",
       "static/chunks/864-90f9d1b5c4a4164c.js",
       "static/chunks/main-app-3cd837999e0ad435.js",
       "static/chunks/724-9f716cead9ae35fd.js",
-      "static/css/5c1e33a82820daa7.css",
-      "static/chunks/app/about/page-0d6504d88433139e.js"
+      "static/css/8e3685d5e160cb0b.css",
+      "static/chunks/app/about/page-ffc9ffa78dc23ca7.js"
     ],
     "/exps/[id]/page": [
-      "static/chunks/webpack-23151aafbe4b9454.js",
+      "static/chunks/webpack-be441701c1dc7f8c.js",
       "static/chunks/fd9d1056-2703617740f52551.js",
       "static/chunks/864-90f9d1b5c4a4164c.js",
       "static/chunks/main-app-3cd837999e0ad435.js",

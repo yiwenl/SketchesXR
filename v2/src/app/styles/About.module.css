@@ -32,3 +32,11 @@
 .link {
   color: rgb(150, 150, 138);
 }
+
+@media (max-width: 600px) {
+  .descContainer {
+    position: absolute;
+    width: 100%;
+    padding: 0 35px 50px 35px;
+  }
+}

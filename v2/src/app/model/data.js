@@ -47,4 +47,10 @@ export default [
     url: "//yiwenl.github.io/SketchesXR/experiments/swirl/dist/index.html",
     title: "Swirl",
   },
+  {
+    cover: "assets/img/coverLostMemory.jpg",
+    video: "assets/img/lostMemory.gif",
+    url: "//yiwenl.github.io/SketchesXR/experiments/lostMemory/dist/index.html",
+    title: "Lost Memory",
+  },
 ];
