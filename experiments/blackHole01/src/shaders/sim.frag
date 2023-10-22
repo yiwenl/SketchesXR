@@ -19,6 +19,7 @@ uniform sampler2D uEnvMap;
 
 uniform float uBound;
 uniform float uTime;
+uniform float uForce;
 
 layout (location = 0) out vec4 oFragColor0;
 layout (location = 1) out vec4 oFragColor1;
@@ -42,7 +43,7 @@ void main(void) {
     vec3 posOrg = texture(uPosOrgMap, vTextureCoord).xyz;
     vec3 color = texture(uColorMap, vTextureCoord).xyz;
     float life = data.x;
-    life -= mix(1.0, 3.0, data.y) * 0.005;
+    life -= mix(1.0, 3.0, data.y) * 0.002;
 
     float pullForce = length(pos);
     pullForce = smoothstep(0.0, uBound * 0.5, pullForce);
@@ -68,10 +69,10 @@ void main(void) {
     acc.z += noise * 12.5 * density;
 
     
-    float speedLife = smoothstep(1.0, .8, life);
+    float speedLife = smoothstep(.9, .7, life);
 
     float speed = mix(1.0, 2.0, extra.x);
-    vel += acc * speed * speedLife * 0.0002;
+    vel += acc * speed * speedLife * 0.0002 * uForce;
     vel *= 0.92;
 
     pos += vel;
@@ -87,10 +88,10 @@ void main(void) {
     }
 
 
-    // // re-sample color
-    vec4 screenPos = uProjectionMatrix * uViewMatrix * uLocalMatrix * vec4(pos, 1.0);
-    vec2 uv = screenPos.xy/screenPos.w * .5 + .5;
-    color = texture(uEnvMap, uv).rgb;
+    // re-sample color
+    // vec4 screenPos = uProjectionMatrix * uViewMatrix * uLocalMatrix * vec4(pos, 1.0);
+    // vec2 uv = screenPos.xy/screenPos.w * .5 + .5;
+    // color = texture(uEnvMap, uv).rgb;
 
     data.x = life;
 

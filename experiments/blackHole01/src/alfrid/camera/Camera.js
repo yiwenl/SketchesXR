@@ -2,6 +2,7 @@ import { mat4, vec3, mat3 } from "gl-matrix";
 
 class Camera {
   constructor() {
+    this._mtx = mat4.create();
     this._mtxView = mat4.create();
     this._mtxProj = mat4.create();
     this._near = 0;
@@ -54,6 +55,11 @@ class Camera {
    *
    */
   _updateMatrices() {}
+
+  get matrix() {
+    mat4.multiply(this._mtx, this._mtxProj, this._mtxView);
+    return this._mtx;
+  }
 
   /**
    * Get view matrix from camera

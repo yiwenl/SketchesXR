@@ -29,19 +29,20 @@ import Settings from "./Settings";
 import { logError } from "./utils";
 import preload from "./utils/preload";
 import "./utils/Capture";
+import Config from "./Config";
 
-import "./debug";
+// import "./debug";
 import addControls from "./utils/addControl";
 import * as ARUtils from "./ARUtils";
 
 let scene;
 let canvas;
 
+const isDevelopment = process.env.NODE_ENV === "development" && !GL.isMobile;
 function _init3D() {
-  const isDevelopment = process.env.NODE_ENV === "development";
-  if (isDevelopment) {
-    Settings.init();
-  }
+  // if (isDevelopment) {
+  //   Settings.init();
+  // }
   canvas = document.createElement("canvas");
   canvas.id = "main-canvas";
   document.body.appendChild(canvas);
@@ -52,20 +53,22 @@ function _init3D() {
     preserveDrawingBuffer: !GL.isMobile && isDevelopment,
   });
 
+  if (`drawingBufferColorSpace` in GL.gl) {
+    GL.gl.drawingBufferColorSpace = "display-p3";
+  }
+
   if (!GL.webgl2) {
     document.body.classList.add("no-webgl2");
     return;
   }
 
-  if (isDevelopment && !ARUtils.isARSupported) {
-    Settings.init();
-  }
+  Config.numParticles = GL.isMobile ? 256 : 256;
+
+  // if (isDevelopment && !ARUtils.isARSupported) {
+  //   Settings.init();
+  // }
 
   scene = new SceneApp();
-
-  if (isDevelopment) {
-    addControls(scene);
-  }
 
   checkAR();
 }
@@ -101,3 +104,7 @@ function initStartButton() {
 }
 
 preload().then(_init3D, logError);
+
+if (isDevelopment) {
+  import("./debug");
+}

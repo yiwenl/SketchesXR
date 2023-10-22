@@ -4,6 +4,7 @@ precision highp float;
 in vec3 vNormal;
 in vec3 vColor;
 in vec4 vShadowCoord;
+in float vLife;
 
 uniform sampler2D uDepthMap;
 
@@ -35,9 +36,9 @@ void main(void) {
     // shadow
     vec4 shadowCoord    = vShadowCoord / vShadowCoord.w;
 	float s             = samplePCF3x3(shadowCoord);
-    s = mix(s, 1.0, 0.95);
+    s = mix(s, 1.0, mix(0.25, 1.0, vLife));
 
-    float g = diffuse(vNormal, LIGHT, .25);
+    float g = diffuse(vNormal, LIGHT, mix(0.5, 0.0, vLife));
     oColor = vec4(vColor * g * s, 1.0);
 
     // oColor = texture(uDepthMap, shadowCoord.xy);

@@ -1,11 +1,11 @@
-// copy.frag
-
-#define SHADER_NAME SIMPLE_TEXTURE
+#version 300 es
 
 precision highp float;
-varying vec2 vTextureCoord;
-uniform sampler2D texture;
+in vec2 vTextureCoord;
+uniform sampler2D uMap;
+
+out vec4 oColor;
 
 void main(void) {
-    gl_FragColor = texture2D(texture, vTextureCoord);
+    oColor = texture(uMap, vTextureCoord);
 }

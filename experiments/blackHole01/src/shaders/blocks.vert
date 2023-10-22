@@ -18,17 +18,20 @@ uniform sampler2D uPosMap;
 uniform sampler2D uVelMap;
 uniform sampler2D uDataMap;
 uniform sampler2D uColorMap;
+uniform float uOffset;
 
 out vec2 vTextureCoord;
 out vec3 vNormal;
 out vec3 vColor;
 out vec4 vShadowCoord;
+out float vLife;
 
 #pragma glslify: rotate    = require(./glsl-utils/rotate.glsl)
 #define axisX vec3(1.0, 0.0, 0.0)
 
 void main(void) {
-    vec3 pos = aVertexPosition;
+    float offset = clamp(uOffset * 2.0 - fract(aExtra.x + aExtra.y), 0.0, 1.0);
+    vec3 pos = aVertexPosition * offset;
     pos.x *= aPosOffset.z;
 
 
@@ -39,6 +42,7 @@ void main(void) {
 
     vec3 dir = normalize(vel);
     float life = texture(uDataMap, aPosOffset.xy).x;
+    vLife = life;
     float scaleLife = abs(life - 0.5);
     scaleLife = smoothstep(0.5, 0.4, scaleLife);
 

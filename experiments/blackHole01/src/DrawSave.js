@@ -35,7 +35,7 @@ export default class DrawSave extends Draw {
           (j / num) * 2 - 1 + 0.5 / num,
         ]);
         normals.push([random(), random(), random()]);
-        datas.push([0, random(), random()]);
+        datas.push([0.1, random(), random()]);
         indices.push(i);
       }
     }
