@@ -53,4 +53,10 @@ export default [
     url: "//yiwenl.github.io/SketchesXR/experiments/lostMemory/dist/index.html",
     title: "Lost Memory",
   },
+  {
+    cover: "assets/img/coverBlackhole.jpg",
+    video: "assets/img/blachHole.gif",
+    url: "//yiwenl.github.io/SketchesXR/experiments/blackHole01/dist/index.html",
+    title: "Black Hole",
+  },
 ];
