@@ -56,5 +56,5 @@ void main(void) {
     vec2 uv = vTextureCoord;
     uv.y = 1.0 - uv.y;
 
-    oColor = lookup(color, uLookupMap);
+    oColor = lookup(color, uLookupMap, .5);
 }

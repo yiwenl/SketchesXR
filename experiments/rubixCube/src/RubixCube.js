@@ -72,7 +72,7 @@ class RubixCube {
     this._inIntro = false;
     this._lockDuration = LOCK_DURATION;
     this._cubes.forEach((c) => {
-      c.speed = 0.02;
+      c.speed = 0.04;
       c.easing = "expInOut";
     });
   }
@@ -83,7 +83,7 @@ class RubixCube {
     this[`rotate${move.face}`](-move.angle, true);
 
     this._cubes.forEach((c) => {
-      c.speed = 0.05;
+      c.speed = 0.08;
       c.easing = "cubicOut";
     });
 
@@ -94,7 +94,7 @@ class RubixCube {
         this._isSolving = false;
       }, 700);
       this._cubes.forEach((c) => {
-        c.speed = 0.02;
+        c.speed = 0.04;
         c.easing = "expInOut";
       });
 
@@ -219,11 +219,13 @@ class RubixCube {
     this.tempLock();
   }
 
-  render(mMtxCamera, mTexBg) {
-    GL.setModelMatrix(this._container.matrix);
+  render(mMtxCamera, mTexBg, mOffsetOpen) {
+    // GL.setModelMatrix(this._container.matrix);
     this._cubes.forEach((cube) =>
       cube
+        .uniform("uCubeMatrix", this._container.matrix)
         .uniform("uCameraMatrix", mMtxCamera)
+        .uniform("uOffsetOpen", mOffsetOpen)
         .bindTexture("uMap", mTexBg, 0)
         .draw()
     );

@@ -9,12 +9,9 @@ import {
 } from "alfrid";
 import { isARSupported, setCamera, hitTest } from "./ARUtils";
 import { mat4 } from "gl-matrix";
-import Scheduler from "scheduling";
 import DrawMark from "./DrawMark";
 import DrawEnv from "./DrawEnv";
 import DrawBg from "./DrawBg";
-
-import { pick } from "./utils";
 
 import Assets from "./Assets";
 import { updateCameraTexture, getCameraTexture } from "./utils/cameraTexture";
@@ -37,9 +34,9 @@ class SceneApp extends Scene {
     this.mtxModel = mat4.create();
     this.mtxAR = mat4.create();
     this.mtxSave = mat4.create();
-    const s = 0.05;
-    // mat4.translate(this.mtxAR, this.mtxAR, [0, 0.2, 0]);
-    // mat4.scale(this.mtxAR, this.mtxAR, [s, s, s]);
+    const s = 0.3;
+    mat4.translate(this.mtxAR, this.mtxAR, [0, 0.5, 0]);
+    mat4.scale(this.mtxAR, this.mtxAR, [s, s, s]);
     this.touchScale = new TouchScale();
     this.touchScale.limit(0.1, 5);
 
@@ -48,6 +45,7 @@ class SceneApp extends Scene {
     this._offsetOpen = new EaseNumber(1);
     this._hasStarted = false;
     this._hasPresented = false;
+    this._isAnimating = false;
   }
 
   present() {
@@ -60,6 +58,8 @@ class SceneApp extends Scene {
   _initTextures() {
     this._fboBg = new FrameBuffer(GL.width, GL.height);
     this._fboEnv = new FrameBuffer(GL.width, GL.height);
+    this._fboMap = new FrameBuffer(GL.width, GL.height);
+
     this._textureLookup = Assets.get("lookup");
     this._textureLookup.minFilter = GL.NEAREST;
     this._textureLookup.magFilter = GL.NEAREST;
@@ -87,15 +87,20 @@ class SceneApp extends Scene {
       if (e.code === "Space") {
         this._cube.randomMove();
       } else if (e.code === "KeyR") {
-        console.log("solve");
         this._cube.solve();
+      } else if (e.code === "KeyC") {
+        this.capture();
       }
     });
   }
 
   _onTouch = () => {
     // console.log("on Touch", this._hasPresented, this._hasStarted);
-    if (this._hasStarted) return;
+    if (this._hasStarted && !this._isAnimating) {
+      this._isAnimating = true;
+      this.animateIn();
+      return;
+    }
     const mtxHit = hitTest();
     if (mtxHit !== null) {
       mat4.copy(this.mtxHit, mtxHit);
@@ -115,6 +120,26 @@ class SceneApp extends Scene {
     }
   }
 
+  animateIn() {
+    const numMoves = 10;
+    const delayPerStep = 800;
+    for (let i = 0; i < numMoves; i++) {
+      setTimeout(() => {
+        this._cube.randomMove();
+      }, delayPerStep * i);
+    }
+
+    let delay = delayPerStep * (numMoves + 2);
+    setTimeout(() => {
+      this._cube.solve();
+    }, delay);
+
+    delay = delayPerStep * (numMoves + 3);
+    setTimeout(() => {
+      this._isAnimating = false;
+    }, delay);
+  }
+
   capture() {
     mat4.copy(this.mtxSave, this.camera.matrix);
   }
@@ -122,6 +147,7 @@ class SceneApp extends Scene {
   update() {
     if (this._hasPresented) updateCameraTexture();
     if (!isARSupported || !this._hasPresented) {
+      this.capture();
       this._dEnv.draw();
     }
 
@@ -135,6 +161,18 @@ class SceneApp extends Scene {
       .bindTexture("uMap", tBg, 0)
       .bindTexture("uLookupMap", this._textureLookup, 1)
       .draw();
+
+    if (!this._hasStarted) {
+      this._fboMap.bind();
+      GL.clear(0, 0, 0, 0);
+      this._dCopy.draw(this._fboBg.texture);
+      this._fboMap.unbind();
+    }
+
+    if (!this._hasStarted && isARSupported) {
+      setCamera(GL, this.camera, false);
+      mat4.copy(this.mtxSave, this.camera.matrix);
+    }
   }
 
   render() {
@@ -160,13 +198,18 @@ class SceneApp extends Scene {
     GL.setModelMatrix(this.mtxHit);
     s = this._offsetHit.value * 0.005;
     this._dBall.draw([0, 0, 0], [s, s, s], [1, 1, 1]);
-    this._dAxis.draw();
     this._dMark.uniform("uOffset", this._offsetHit.value).draw();
 
     GL.setModelMatrix(this.mtxModel);
     // draw world
     // this._drawBlocks.uniform("uTime", Scheduler.getElapsedTime()).draw();
-    this._cube.render(this.mtxSave, this._fboBg.texture);
+    if (this._offsetOpen.value > 0.01) {
+      this._cube.render(
+        this.mtxSave,
+        this._fboMap.texture,
+        this._offsetOpen.value
+      );
+    }
 
     if (isARSupported && this._hasPresented) {
       s = 1;
