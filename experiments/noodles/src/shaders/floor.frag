@@ -39,5 +39,5 @@ void main(void) {
 
     // oColor = vec4(vec3(0.0), s * 0.5);
     // oColor = vec4(vec3(s), 1.0);
-    oColor = vec4(vec3(0.0), mix(0.25, 0.0, s));
+    oColor = vec4(vec3(0.0), mix(0.3, 0.0, s));
 }

@@ -40,9 +40,12 @@ void main(void) {
     // shadow
     vec4 shadowCoord    = vShadowCoord / vShadowCoord.w;
 	float s             = samplePCF3x3(shadowCoord);
-    s = mix(0.8, 1.0, s);
+
+
+    float shadowStrength = 0.3;
+    s = mix(1.0, s, shadowStrength);
     // s = mix(s, 1.0, 0.25);
 
-    float g = diffuse(vNormal, LIGHT, .25);
+    float g = diffuse(vNormal, LIGHT, shadowStrength);
     oColor = vec4(vColor * g * s, 1.0);
 }

@@ -212,17 +212,31 @@ class SceneApp extends Scene {
     mat4.mul(this.mtxShadow, biasMatrix, this.mtxShadow);
 
     const { numSets, numSegs } = Config;
-    for (let i = 0; i <= numSegs; i++) {
-      let index = i;
-      const { texture } = this._posArray[index];
-      this._drawRibbon.bindTexture(`uPosMap${i}`, texture, i);
+
+    const toLog = Math.random() < -0.1;
+
+    // console.log(numSets);
+    for (let i = 0; i < numSets; i++) {
+      const startIndex = i * numSegs - i;
+
+      for (let i = 0; i <= numSegs; i++) {
+        let index = startIndex + i;
+        const { texture } = this._posArray[index];
+        this._drawRibbon.bindTexture(`uPosMap${i}`, texture, i);
+
+        if (toLog) {
+          console.log(index);
+        }
+      }
+
+      this._drawRibbon
+        .bindTexture("uDepthMap", tDepth, numSegs + 1)
+        .bindTexture("uColorMap", this._fbo.read.getTexture(4), numSegs + 2)
+        .uniform("uShadowMatrix", this.mtxShadow)
+        .draw();
     }
 
-    this._drawRibbon
-      .bindTexture("uDepthMap", tDepth, numSegs + 1)
-      .bindTexture("uColorMap", this._fbo.read.getTexture(4), numSegs + 2)
-      .uniform("uShadowMatrix", this.mtxShadow)
-      .draw();
+    toLog && console.log("-----");
   }
 
   updateParticles() {
@@ -343,6 +357,12 @@ class SceneApp extends Scene {
 
     // draw ribbon
     this.renderRibbons(true);
+
+    // s = GL.width / this._posArray.length;
+    // this._posArray.forEach(({ texture }, i) => {
+    //   GL.viewport(s * i, 0, s, s);
+    //   this._dCopy.draw(texture);
+    // });
 
     s = 1;
     GL.viewport(0, 0, s, s);

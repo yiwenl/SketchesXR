@@ -1,6 +1,6 @@
 export default {
-  numSets: 1,
+  numSets: 4,
   numSegs: 10,
-  numParticles: 128,
+  numParticles: 128 / 2,
   autoSave: false,
 };

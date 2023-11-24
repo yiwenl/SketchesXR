@@ -47,7 +47,7 @@ void main(void) {
 
     life -= mix(1.0, 3.0, data.y) * 0.004;
 
-    vec3 noise = curlNoise(pos * 0.6 + uTime * 0.4);
+    vec3 noise = curlNoise(pos * 0.3 + uTime * 0.4);
     vec3 acc = vec3(0.0, 1.0, 0.0);
     acc += noise;
     // rotation force
@@ -55,12 +55,12 @@ void main(void) {
     dir.xz = rotate(dir.xz, PI * 0.6);
     float f = length(pos.xz);
     f = smoothstep(0.1, 0.5, f);
-    acc += dir * 0.75 * f;
+    // acc += dir * 0.75 * f;
 
     vel += acc * 0.0015;
 
 
-    float speed = mix(1.0, 2.0, extra.x);
+    float speed = mix(1.0, 2.0, extra.x) * 2.0;
     float initSpeed = smoothstep(0.8, 0.5, life);
     pos += vel * speed * initSpeed * speedEdge;
     vel *= 0.95;

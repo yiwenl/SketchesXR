@@ -59,4 +59,10 @@ export default [
     url: "//yiwenl.github.io/SketchesXR/experiments/blackHole01/dist/index.html",
     title: "Black Hole",
   },
+  {
+    cover: "assets/img/coverNoodles.jpg",
+    video: "assets/img/noodles.gif",
+    url: "//yiwenl.github.io/SketchesXR/experiments/noodles/dist/index.html",
+    title: "Noodles",
+  },
 ];

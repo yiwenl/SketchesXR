@@ -18,7 +18,7 @@ export default class DrawSave extends Draw {
 
     const { sqrt, sin, cos, PI, pow } = Math;
     const getPos = () => {
-      const r = pow(sqrt(random()), 3.0) * 2.0;
+      const r = pow(sqrt(random()), 3.0) * 2.5;
       const a = random(PI * 2.0);
       return [r * cos(a), 0, r * sin(a)];
     };

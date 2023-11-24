@@ -71,14 +71,14 @@ export default class DrawRibbon extends Draw {
     // instancing
     const uvOffset = [];
     const extras = [];
-    for (let j = 0; j < num; j++) {
-      for (let i = 0; i < num; i++) {
-        uvOffset.push([(i + 0.5) / num, (j + 0.5) / num]);
+    let _num = 2;
+    _num = num;
+    for (let j = 0; j < _num; j++) {
+      for (let i = 0; i < _num; i++) {
+        uvOffset.push([(i + 0.5) / _num, (j + 0.5) / _num]);
         extras.push([random(), random(), random()]);
       }
     }
-
-    console.log(uvOffset);
 
     mesh.bufferInstance(uvOffset, "aUVOffset").bufferInstance(extras, "aExtra");
 
