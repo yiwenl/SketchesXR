@@ -1,4 +1,4 @@
 export default {
-  numParticles: 128,
+  numParticles: 128 * 2,
   autoSave: false,
 };
