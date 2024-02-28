@@ -1,5 +1,6 @@
 import Scheduler from "scheduling";
 import { mat4 } from "gl-matrix";
+import { GL, GLTexture } from "alfrid";
 
 let isARSupported = false;
 
@@ -19,19 +20,18 @@ let mtxHit = mat4.create();
 
 // camera texture
 let cameraTexture;
+let _textureCam;
+let _textureDepth;
 
-const checkSupported = function checkSupported() {
-  return new Promise((resolve, reject) => {
-    if (!navigator.xr) {
-      resolve(false);
-    } else {
-      navigator.xr.isSessionSupported("immersive-ar").then((supported) => {
-        isARSupported = supported;
-        resolve(supported);
-      });
-    }
-  });
-};
+export async function checkSupported() {
+  if (!navigator.xr) {
+    isARSupported = false;
+  } else {
+    isARSupported = await navigator.xr.isSessionSupported("immersive-ar");
+  }
+
+  return isARSupported;
+}
 
 const makeXRCompatible = (mSession) => {
   session = mSession;
@@ -59,14 +59,23 @@ const initHitTesting = () => {
   });
 };
 
-const init = function (mGl) {
+export function init(mGl) {
   gl = mGl;
   return new Promise((resolve, reject) => {
     navigator.xr
       .requestSession("immersive-ar", {
         optionalFeatures: ["dom-overlay"],
         domOverlay: { root: document.querySelector(".container") },
-        requiredFeatures: ["local", "hit-test", "camera-access"],
+        requiredFeatures: [
+          "local",
+          "hit-test",
+          "camera-access",
+          "depth-sensing",
+        ],
+        depthSensing: {
+          usagePreference: ["cpu-optimized"],
+          dataFormatPreference: ["luminance-alpha"],
+        },
       })
       .then(makeXRCompatible)
       .then(initHitTesting)
@@ -75,6 +84,11 @@ const init = function (mGl) {
         session.onend = () => {
           cbSessionEnd && cbSessionEnd();
         };
+
+        console.log("Depth Sensing :", session);
+        console.log(session.depthUsage);
+        console.log(session.depthDataFormat);
+        console.table(session.enabledFeatures);
 
         session.requestReferenceSpace("local").then((refSpace) => {
           xrRefSpace = refSpace;
@@ -89,7 +103,7 @@ const init = function (mGl) {
         reject(e);
       });
   });
-};
+}
 
 // animation frame
 function loop(t, mFrame) {
@@ -98,16 +112,16 @@ function loop(t, mFrame) {
 }
 
 // binding the framebuffer to draw
-function bind() {
+export function bind() {
   gl.bindFramebuffer(gl.FRAMEBUFFER, session.renderState.baseLayer.framebuffer);
 }
 
-function unbind() {
+export function unbind() {
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 }
 
 // set the camera from XRFrame.pose
-function setCamera(GL, mCamera, mBind = true) {
+export function setCamera(GL, mCamera, mBind = true) {
   if (!session || !frame) {
     return;
   }
@@ -128,6 +142,33 @@ function setCamera(GL, mCamera, mBind = true) {
 
     // get camera texture
     cameraTexture = binding.getCameraImage(view.camera);
+    if (!_textureCam) {
+      _textureCam = new GLTexture(cameraTexture);
+    } else {
+      _textureCam.updateTexture(cameraTexture);
+    }
+
+    // depth sensing
+    const depthInfo = frame.getDepthInformation(view);
+    if (depthInfo !== null) {
+      // console.log("depth", depthInfo);
+      const { width, height, data } = depthInfo;
+      if (!_textureDepth) {
+        _textureDepth = new GLTexture(
+          data,
+          {
+            type: GL.UNSIGNED_BYTE,
+            minFilter: GL.NEAREST,
+            magFilter: GL.NEAREST,
+          },
+          width,
+          height
+        );
+      } else {
+        _textureDepth.updateTexture(data);
+      }
+    }
+
     GL.setMatrices(mCamera);
     GL.viewport(x, y, width, height);
 
@@ -138,7 +179,7 @@ function setCamera(GL, mCamera, mBind = true) {
 }
 
 // get hit test result
-function hitTest() {
+export function hitTest() {
   if (!frame || !xrHitTestSource) {
     return null;
   }
@@ -154,25 +195,16 @@ function hitTest() {
 }
 
 // session end callback
-function onSessionEnd(mCb) {
+export function onSessionEnd(mCb) {
   cbSessionEnd = mCb;
 }
 
-function getCamera() {
-  return cameraTexture;
+export function getCameraTexture() {
+  return _textureCam;
 }
 
-export {
-  isARSupported,
-  session,
-  canvas,
-  gl,
-  checkSupported,
-  init,
-  setCamera,
-  bind,
-  unbind,
-  hitTest,
-  onSessionEnd,
-  getCamera,
-};
+export function getDepthTexture() {
+  return _textureDepth;
+}
+
+export { isARSupported, session, canvas, gl };

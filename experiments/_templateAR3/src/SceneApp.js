@@ -1,13 +1,22 @@
 import {
   GL,
+  Draw,
+  Geom,
   DrawBall,
   DrawAxis,
   DrawCopy,
   Scene,
   FrameBuffer,
+  ShaderLibs,
   EaseNumber,
 } from "alfrid";
-import { isARSupported, setCamera, hitTest } from "./ARUtils";
+import {
+  isARSupported,
+  setCamera,
+  hitTest,
+  getCameraTexture,
+  getDepthTexture,
+} from "./ARUtils";
 import { mat4 } from "gl-matrix";
 import Scheduler from "scheduling";
 import DrawMark from "./DrawMark";
@@ -15,11 +24,12 @@ import DrawEnv from "./DrawEnv";
 import DrawBg from "./DrawBg";
 
 import Assets from "./Assets";
-import { updateCameraTexture, getCameraTexture } from "./utils/cameraTexture";
 import TouchScale from "./utils/TouchScale";
 
 // Example code
 import DrawBlocks from "./DrawBlocks";
+
+import fs from "shaders/depth.frag";
 
 class SceneApp extends Scene {
   constructor() {
@@ -33,7 +43,7 @@ class SceneApp extends Scene {
     this.mtxHit = mat4.create();
     this.mtxModel = mat4.create();
     this.mtxAR = mat4.create();
-    const s = 0.05;
+    let s = 0.05;
     mat4.translate(this.mtxAR, this.mtxAR, [0, 0.2, 0]);
     mat4.scale(this.mtxAR, this.mtxAR, [s, s, s]);
     this.touchScale = new TouchScale();
@@ -69,11 +79,13 @@ class SceneApp extends Scene {
     this._dEnv = new DrawEnv()
       .setClearColor(0, 0, 0, 0)
       .bindFrameBuffer(this._fboEnv);
-    this._drawBg = new DrawBg()
-      .setClearColor(0, 0, 0, 0)
-      .bindFrameBuffer(this._fboBg);
 
+    this._drawBg = new DrawBg();
     this._drawBlocks = new DrawBlocks();
+
+    this._drawDepth = new Draw()
+      .setMesh(Geom.bigTriangle())
+      .useProgram(ShaderLibs.bigTriangleVert, fs);
   }
 
   _onTouch = () => {
@@ -99,21 +111,9 @@ class SceneApp extends Scene {
   }
 
   update() {
-    if (this._hasPresented) updateCameraTexture();
     if (!isARSupported || !this._hasPresented) {
       this._dEnv.draw();
     }
-
-    let tBg;
-    if (!this._hasPresented || !isARSupported) {
-      tBg = this._fboEnv.texture;
-    } else {
-      tBg = getCameraTexture();
-    }
-    this._drawBg
-      .bindTexture("uMap", tBg, 0)
-      .bindTexture("uLookupMap", this._textureLookup, 1)
-      .draw();
   }
 
   render() {
@@ -132,8 +132,15 @@ class SceneApp extends Scene {
       mat4.identity(this.mtxModel, this.mtxModel);
     }
 
+    this._textureCamera = getCameraTexture();
+    let tBg = this._textureCamera || this._fboEnv.texture;
+
     GL.disable(GL.DEPTH_TEST);
-    this._dCopy.draw(this._fboBg.texture);
+    GL.clear(0, 0, 0, 1);
+    this._drawBg
+      .bindTexture("uMap", tBg, 0)
+      .bindTexture("uLookupMap", this._textureLookup, 1)
+      .draw();
     GL.enable(GL.DEPTH_TEST);
 
     GL.setModelMatrix(this.mtxHit);
@@ -146,10 +153,18 @@ class SceneApp extends Scene {
     // draw world
     this._drawBlocks.uniform("uTime", Scheduler.getElapsedTime()).draw();
 
-    if (isARSupported && this._hasPresented) {
-      s = 1;
-      GL.viewport(0, 0, s, s / GL.aspectRatio);
-      this._dCopy.draw(getCameraTexture());
+    let g = 400;
+    if (this._textureCamera) {
+      GL.viewport(0, 0, g, g / GL.aspectRatio);
+      this._dCopy.draw(this._textureCamera);
+    }
+
+    // depth sensing
+    const texDepth = getDepthTexture();
+    if (texDepth) {
+      GL.viewport(g, 0, g, g / GL.aspectRatio);
+      // this._dCopy.draw(texDepth);
+      this._drawDepth.bindTexture("uMap", texDepth, 0).draw();
     }
 
     GL.enable(GL.DEPTH_TEST);

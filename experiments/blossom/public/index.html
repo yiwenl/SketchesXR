@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>WebXR Template</title>
+    <meta
+      id="viewport"
+      name="viewport"
+      content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover"
+    />
+    <link rel="stylesheet" href="./style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=AR+One+Sans:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- if you need to import js scripts do it here -->
+  </head>
+  <body>
+    <video id="video" playsinline=""></video>
+    <div class="container"></div>
+
+    <div class="container-button top-layer">
+      <button class="btnAR">Start AR</button>
+    </div>
+
+    <div class="container-button">
+      <p class="text-no-support">WebAR not supported in this browser</p>
+      <p class="text-no-webgl2">This Experience<br />requires WebGL2</p>
+    </div>
+  </body>
+</html>

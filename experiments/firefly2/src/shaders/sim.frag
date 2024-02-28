@@ -9,140 +9,141 @@ uniform sampler2D uExtraMap;
 uniform sampler2D uDataMap;
 
 uniform float uTime;
-uniform float uNum;
+uniform float uRadius;
 uniform float uMaxRadius;
+uniform float uSeparationThreshold;
+uniform float uNum;
 
 layout (location = 0) out vec4 oFragColor0;
 layout (location = 1) out vec4 oFragColor1;
 layout (location = 2) out vec4 oFragColor2;
 layout (location = 3) out vec4 oFragColor3;
 
-#pragma glslify: rotate = require(./glsl-utils/rotate.glsl)
-#pragma glslify: snoise = require(./glsl-utils/snoise.glsl)
-#pragma glslify: curlNoise = require(./glsl-utils/curlNoise.glsl)
-
-float map(float v, float a, float b, float c, float d) {
-    float p = (v - a) / ( b - a);
-    return c + ( d - c) * p;
-}
-
-vec3 _normalize(vec3 v) {
-    if(length(v) <= 0.0) {
-        return vec3(0.0);
-    } else {
-        return normalize(v);
-    }
-}
-
-#define PI 3.1415926535897932384626433832795
+#pragma glslify: curlNoise    = require(./glsl-utils/curlNoise.glsl)
+#define PI 3.141592653
 #define PI2 PI * 2.0
 
-#define radius 3.0
-#define minThres 0.1
-#define maxThres 0.7
+vec3 _normalize(vec3 v) {
+  if(length(v) <= 0.0) {
+    return vec3(0.0);
+  } else {
+    return normalize(v);
+  }
+}
 
 void main(void) {
-    bool needUpdate = false;
-
     vec3 pos = texture(uPosMap, vTextureCoord).xyz;
     vec3 vel = texture(uVelMap, vTextureCoord).xyz;
     vec3 extra = texture(uExtraMap, vTextureCoord).xyz;
     vec3 data = texture(uDataMap, vTextureCoord).xyz;
 
-    vec3 dirSelf = _normalize(vel);
     float cycle = data.x;
 
-    // force
-    vec3 acc = vec3(0.0);
-
-    // noise
-    vec3 noise = curlNoise(pos * 0.2 + uTime * 0.05);
-    noise.y += extra.y * 0.5;
-    acc += noise * 0.5;
-    acc.y += noise.y * 0.5;
-
+    int NUM = int(uNum);
 
     vec2 uvParticle;
-    vec3 posParticle, dirParticle, dir;
-    float dist, t, p, f, _radius, cycleParticle, diff;
-
-    int num = int(uNum);
-    _radius = radius * 0.5;
+    vec3 posParticle, velParticle, diff;
+    float f, dist, cycleParticle, diffCycle, t;
 
 
+    vec3 acc = vec3(0.0);
+    float countNeighbour = 0.0;
+    vec3 posAverage = vec3(0.0);
+    vec3 velAverage = vec3(0.0);
+
+    t = sin(uTime * 0.2) * .5 + .5;
+    float radius = uRadius * mix(1.0, 1.5, extra.y) * mix(.8, 1.2, t);
+    float separationRadius = radius * uSeparationThreshold;
+    float entrainRadius = radius * 0.4;
+
+    float forceMul = 0.95;
     float cycleSync = 0.0;
+    
 
-    for(int j=0; j<num; j++) {
-        for(int i=0; i<num; i++) {
-            uvParticle = vec2(float(i) / uNum, float(j) / uNum);
-
+    for(int j=0; j<NUM; j++) {
+        for(int i=0; i<NUM; i++) {
+            uvParticle = vec2(float(i)/uNum, float(j)/uNum);
             posParticle = texture(uPosMap, uvParticle).xyz;
-            dist = distance(posParticle, pos);
+            velParticle = texture(uVelMap, uvParticle).xyz;
+            cycleParticle = texture(uDataMap, uvParticle).x;
 
-            if(dist > 0.0 && dist < _radius) {
-                // getting particle data
-                cycleParticle = texture(uDataMap, uvParticle).x;
-                dirParticle = _normalize(texture(uVelMap, uvParticle).xyz);
-                dir = _normalize(pos - posParticle);
+            dist = distance(pos, posParticle);
+            if(dist > 0.0) {
 
-                p = dist / radius;
-
-                // repel
-                f = smoothstep(minThres, 0.0, p);
-                acc += dir * f;
-
-                // pulling
-                f = smoothstep(maxThres, 1.0, p);
-                acc -= dir * f * 0.002;
-
-                // alignment
-                dir = _normalize(dirSelf + dirParticle);
-                f = smoothstep(minThres, maxThres, p);
-                f = sin(f * PI);
-                acc += dir * f * 0.01;
-            }
-
-            // Entrainment
-            if(dist > 0.0 && dist < _radius * 0.5) {
-
-                diff = cycleParticle - cycle;
-                if(diff > PI) {
-                    diff -= PI2;
-                } 
-                if(diff < -PI) {
-                    diff += PI2;
+                // Separation
+                if(dist < separationRadius) {
+                    diff = pos - posParticle;
+                    diff = _normalize(diff) / dist;
+                    acc += diff * 0.0001;
                 }
-                cycleSync += diff;
+
+                // Cohesion & Alignment
+                if(dist < radius) {
+                    posAverage += posParticle;
+                    velAverage += velParticle;
+                    countNeighbour += 1.0;
+                }
+
+                // Entrainment
+                if(dist < entrainRadius) {
+                    diffCycle = cycleParticle - cycle;
+                    if(diffCycle > PI) {
+                        diffCycle -= PI2;
+                    } 
+                    if(diffCycle < -PI) {
+                        diffCycle += PI2;
+                    }
+                    cycleSync += diffCycle;
+                }
             }
+
         }
     }
 
+    // Cohesion
+    posAverage /= countNeighbour;
+    diff = posAverage - pos;
+    diff = _normalize(diff) * 0.0005 * forceMul;
+    acc += diff;
 
-    // pulling back to center
-    dist = length(pos.xz);
-    f = smoothstep(uMaxRadius * 0.25, uMaxRadius * 0.8, dist);
-    dir = _normalize(vec3(pos.x, 0.0, pos.z));
-    acc -= dir * f;    
+    // Alignment
+    velAverage /= countNeighbour;
+    velAverage = _normalize(velAverage) * 0.002 * forceMul;
+    acc += velAverage;
 
-    f = smoothstep(0.2, 0.0, pos.y);
-    acc.y += f * mix(0.5, 1.0, data.y);
+    // Noise
+    vec3 noise = curlNoise(pos * 0.2 + uTime * 0.1);
+    acc += noise * 0.001 * mix(1.0, 2.0, extra.z);
 
-    f = smoothstep(0.5, 3.5, pos.y);
-    acc.y -= f * mix(0.5, 1.0, data.z);
+    // Boundary
+    t = fract(extra.x + extra.y);
+    float maxRadius = uMaxRadius * mix(1.0, 1.25, t);
+    if(length(pos) > maxRadius) {
+        diff = -_normalize(pos);
+        diff *= length(pos) / maxRadius;
+        acc += diff * 0.002 * mix(0.5, 2.0, extra.x);
+    }
 
-    acc.y *= 0.5;
+    vel += acc;
+    pos += vel * mix(1.0, 2.0, extra.x) * 0.1;
+    vel *= 0.96;
 
-    float speedOffset = mix(1.0, 1.5, extra.y);
-    vel += acc * 0.0001 * speedOffset * 32.0 / uNum;
+    float maxSpeed = 0.1;
+    float speed = length(vel);
+    if(speed > maxSpeed) {
+        vel = _normalize(vel) * maxSpeed;
+    }
 
-    pos += vel;
-    vel *= 0.95;
+    float maxNum = uNum * uNum;
+    float br = smoothstep(0.0, maxNum * 0.1, countNeighbour);
+    data.y = br;
 
     // write back cycle
-    cycle += (mix(0.1, 0.13, extra.z) + cycleSync * 0.001 * mix(0.5, 1.0, extra.x)) * 0.5;
-    cycle = mod(cycle + PI * 2.0, PI * 2.0);
+    t = mix(0.5, 1.0, cos(uTime * .3234) * .5 + .5);
+    cycle += mix(0.1, 0.2, extra.z) * 0.2 + cycleSync * 0.02 * mix(0.5, 1.0, extra.x) * t;
+    cycle = mod(cycle, PI * 2.0);
     data.x = cycle;
-
+    
 
     oFragColor0 = vec4(pos, 1.0);
     oFragColor1 = vec4(vel, 1.0);

@@ -40,34 +40,36 @@ function _init3D() {
   checkAR();
 }
 
-function checkAR() {
-  ARUtils.checkSupported().then((supported) => {
-    if (!supported) {
-      document.body.classList.add("no-xr");
-    } else {
-      document.body.classList.add("has-xr");
-      initStartButton();
-    }
-  });
+async function checkAR() {
+  const supported = await ARUtils.checkSupported();
+
+  if (!supported) {
+    document.body.classList.add("no-xr");
+  } else {
+    document.body.classList.add("has-xr");
+    initStartButton();
+  }
 
   setTimeout(() => {
     document.body.classList.add("hide-messages");
   }, 5000);
 }
 
-function initStartButton() {
-  const btnAR = document.body.querySelector(".btnAR");
-  btnAR.addEventListener("click", () => {
-    ARUtils.init(GL.gl).then((gl) => {
-      document.body.removeChild(canvas);
-      scene.present();
+function startAR() {
+  ARUtils.init(GL.gl).then(() => {
+    document.body.removeChild(canvas);
+    scene.present();
 
-      ARUtils.onSessionEnd(() => {
-        console.log("session end");
-        window.location.reload();
-      });
+    ARUtils.onSessionEnd(() => {
+      console.log("session end");
+      window.location.reload();
     });
   });
+}
+
+function initStartButton() {
+  const btnAR = document.body.querySelector(".btnAR");
+  btnAR.addEventListener("click", startAR);
 }
 
 preload().then(_init3D, logError);

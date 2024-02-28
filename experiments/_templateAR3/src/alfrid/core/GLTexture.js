@@ -88,8 +88,12 @@ class GLTexture {
    * @param {object} mSource the texture source
    */
   updateTexture(mSource) {
-    this._source = mSource;
-    this._uploadTexture();
+    if (mSource instanceof WebGLTexture) {
+      this._texture = mSource;
+    } else {
+      this._source = mSource;
+      this._uploadTexture();
+    }
   }
 
   /**

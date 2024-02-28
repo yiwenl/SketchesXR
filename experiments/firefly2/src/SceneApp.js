@@ -26,6 +26,12 @@ import Assets from "./Assets";
 import { updateCameraTexture, getCameraTexture } from "./utils/cameraTexture";
 import TouchScale from "./utils/TouchScale";
 
+// flocking settings
+const maxRadius = 3;
+const radius = 0.8;
+const separationThreshold = 0.4;
+const numSeg = 12;
+
 class SceneApp extends Scene {
   constructor() {
     super();
@@ -131,7 +137,9 @@ class SceneApp extends Scene {
       .bindTexture("uDataMap", this._fbo.read.getTexture(3), 3)
       .uniform("uTime", Scheduler.getElapsedTime() + this.seed)
       .uniform("uNum", numParticles)
-      .uniform("uMaxRadius", 6.0)
+      .uniform("uRadius", radius)
+      .uniform("uMaxRadius", maxRadius)
+      .uniform("uSeparationThreshold", separationThreshold)
       .draw();
 
     this._fbo.swap();
